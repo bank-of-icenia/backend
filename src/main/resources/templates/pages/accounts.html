@@ -1,0 +1,17 @@
+{% extends "parent.html" %}
+{% block body %}
+{% for account in accounts %}
+<li>
+    Account name: {{ account.name }}
+    Balance: {{ account.balance }}
+    <ul>
+        <li><a href="/account/{{account.id}}/transactions">Transactions</a></li>
+        <li><a href="/account/{{account.id}}/deposit">Deposit</a></li>
+        <li><a href="/account/{{account.id}}/withdraw">Withdraw</a></li>
+        <li><a href="/account/{{account.id}}/transfer">Transfer (internal or external)</a></li>
+    </ul>
+</li>
+{% else %}
+You have no accounts
+{% endfor %}
+{% endblock %}
