@@ -1,36 +1,36 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Bank of Icenia</title>
-    <link href="/static/bootstrap.min.css" rel="stylesheet">
-    {% block head %}{% endblock %}
-</head>
-<body class="mx-auto" style="max-width: 100em">
-<nav class="navbar navbar-expand-sm bg-dark-subtle m-40 d-flex flex-wrap">
-    <div class="container-fluid">
-        <a class="navbar-brand" href="/">Bank of Icenia</a>
-        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-            <li class="nav-item">
-                <a class="nav-link {% if selected == "accounts" %}active{% endif %}" href="/accounts">Accounts</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link {% if selected == "transfers" %}active{% endif %}" href="/transfers">Transfers</a>
-            </li>
-        </ul>
-        <ul class="navbar-nav">
-            <li class="nav-item">
-                    {% if user is not null %}
-                    <a class="nav-link" href="/logout">Logout</a>
-                    {% else %}
-                    <a class="nav-link" href="/logout">Login</a>
-                    {% endif %}
-            </li>
-        </ul>
-    </div>
-</nav>
-{% block body %}{% endblock %}
-<script src="/static/bootstrap.bundle.min.js"></script>
-</body>
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Bank of Icenia</title>
+        <link href="/static/assets/css/bootstrap.min.css" rel="stylesheet">
+        {% block head %}{% endblock %}
+    </head>
+    <body class="mx-auto" style="max-width: 100em">
+        <nav class="navbar navbar-expand-sm bg-dark-subtle m-40 d-flex flex-wrap">
+            <div class="container-fluid">
+                <a class="navbar-brand" href="/">Bank of Icenia</a>
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                    <li class="nav-item">
+                        <a class="nav-link {% if selected == "accounts" %}active{% endif %}" href="/accounts">Accounts</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if selected == "transfers" %}active{% endif %}" href="/transfers">Transfers</a>
+                    </li>
+                </ul>
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        {% if user is not null %}
+                        <a class="nav-link" href="/logout">Logout</a>
+                        {% else %}
+                        <a class="nav-link" href="/login">Login</a>
+                        {% endif %}
+                    </li>
+                </ul>
+            </div>
+        </nav>
+        {% block body %}{% endblock %}
+        <script src="/static/assets/js/bootstrap.bundle.min.js"></script>
+    </body>
 </html>

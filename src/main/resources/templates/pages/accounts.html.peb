@@ -1,21 +1,21 @@
-    {% extends "parent.html.peb" %}
-        {% set selected = "accounts" %}
-    {% block body %}
-    <main class="p-4">
-        <ul class="list-group rounded-0" style="max-width: 50em">
-            {% macro account() %}
-                <li class="list-group-item border-dark-subtle">
-                    <div class="row align-items-center">
-                        <div class="col-4">
-                            <a href="/account/id">HOLDING ACCOUNT</a>
-                            <br>
-                            <span class="text-secondary">01-01-01</span>
-                        </div>
-                        <div class="col-2 text-end">
-                            3000d
-                        </div>
-                        <div class="col-6 text-end">
-                            <select name="goto" onchange="javascript:
+{% extends "parent.html.peb" %}
+{% set selected = "accounts" %}
+{% block body %}
+<main class="p-4">
+    <ul class="list-group rounded-0" style="max-width: 50em">
+        {% macro account() %}
+            <li class="list-group-item border-dark-subtle">
+                <div class="row align-items-center">
+                    <div class="col-4">
+                        <a href="/account/id">HOLDING ACCOUNT</a>
+                        <br>
+                        <span class="text-secondary">01-01-01</span>
+                    </div>
+                    <div class="col-2 text-end">
+                        3000d
+                    </div>
+                    <div class="col-6 text-end">
+                        <select name="goto" onchange="javascript:
 if (this.options[this.selectedIndex].value === 'transfer') {
     window.location = '/account/id/transfer';
 } if (this.options[this.selectedIndex].value === 'crosstransfer') {
@@ -28,22 +28,22 @@ if (this.options[this.selectedIndex].value === 'transfer') {
     window.location = '/account/id';
 }
 this.selectedIndex = 0;">
-                                <option value="" selected disabled hidden>Go to...</option>
-                                <option value="deposit">Arrange deposit</option>
-                                <option value="withdraw">Arrange withdrawal</option>
-                                <option value="crosstransfer">Cross-bank transfer</option>
-                                <option value="transfer">Transfer</option>
-                                <option value="transactions">View transactions</option>
-                            </select>
-                        </div>
+                            <option value="" selected disabled hidden>Go to...</option>
+                            <option value="deposit">Arrange deposit</option>
+                            <option value="withdraw">Arrange withdrawal</option>
+                            <option value="crosstransfer">Cross-bank transfer</option>
+                            <option value="transfer">Transfer</option>
+                            <option value="transactions">View transactions</option>
+                        </select>
                     </div>
-                </li>
-            {% endmacro %}
-            {{  account() }}
-            {{  account() }}
-            {{  account() }}
-            {{  account() }}
-            {{  account() }}
-        </ul>
-    </main>
-    {% endblock %}
+                </div>
+            </li>
+        {% endmacro %}
+        {{  account() }}
+        {{  account() }}
+        {{  account() }}
+        {{  account() }}
+        {{  account() }}
+    </ul>
+</main>
+{% endblock %}

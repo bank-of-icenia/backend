@@ -13,7 +13,7 @@ import sh.okx.bankoficenia.backend.model.UserSession
 import java.util.*
 
 fun Route.templatedRoutes(userDao: SqlUserDao) {
-    staticResources("/static", "assets")
+    staticResources("/static", "static")
     authenticate("session-cookie", optional = true) {
         get("/") {
             val user = call.principal<UserSession>()?.let { userDao.read(it.userId) }

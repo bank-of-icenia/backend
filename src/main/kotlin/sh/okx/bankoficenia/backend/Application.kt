@@ -14,6 +14,7 @@ import io.ktor.server.netty.*
 import io.ktor.server.pebble.*
 import io.ktor.server.response.*
 import io.ktor.server.sessions.*
+import io.pebbletemplates.pebble.extension.Function
 import io.pebbletemplates.pebble.loader.ClasspathLoader
 import kotlinx.serialization.json.Json
 import org.jetbrains.exposed.sql.Database
@@ -21,6 +22,8 @@ import sh.okx.bankoficenia.backend.database.SqlSessionDao
 import sh.okx.bankoficenia.backend.database.SqlUserDao
 import sh.okx.bankoficenia.backend.database.getDataSource
 import sh.okx.bankoficenia.backend.model.UserSession
+import sh.okx.bankoficenia.backend.plugins.Extensions
+import sh.okx.bankoficenia.backend.plugins.RandomId
 import sh.okx.bankoficenia.backend.plugins.configureRouting
 import java.io.File
 import javax.sql.DataSource
@@ -46,6 +49,7 @@ fun Application.module(httpClient: HttpClient = applicationHttpClient, config: H
         loader(ClasspathLoader().apply {
             prefix = "templates"
         })
+        extension(Extensions())
     }
 
     install(Sessions) {
