@@ -1,0 +1,8 @@
+{% extends "admin.html.peb" %}
+{% set selected = "createaccount" %}
+{% block body %}
+<main class="p-4">
+    <h4>Create account</h4>
+    <p>The account has been created.</p>
+</main>
+{% endblock %}

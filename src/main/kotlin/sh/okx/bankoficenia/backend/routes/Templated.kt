@@ -77,5 +77,42 @@ fun Route.templatedRoutes(userDao: SqlUserDao) {
             // Todo if logged on, redirect to accounts list
             call.respond(HttpStatusCode.OK, PebbleContent("pages/account/withdraw.html.peb", map))
         }
+
+        get("/admin") {
+            val user = call.principal<UserSession>()?.let { userDao.read(it.userId) }
+            if (user == null || !user.admin) {
+                call.respond(HttpStatusCode.NotFound)
+                return@get
+            }
+
+            val map = HashMap<String, Any>()
+            map["user"] = user
+            // Todo if logged on, redirect to accounts list
+            call.respond(HttpStatusCode.OK, PebbleContent("pages/admin/index.html.peb", map))
+        }
+        get("/admin/createaccount") {
+            val user = call.principal<UserSession>()?.let { userDao.read(it.userId) }
+            if (user == null || !user.admin) {
+                call.respond(HttpStatusCode.NotFound)
+                return@get
+            }
+
+            val map = HashMap<String, Any>()
+            map["user"] = user
+            // Todo if logged on, redirect to accounts list
+            call.respond(HttpStatusCode.OK, PebbleContent("pages/admin/createaccount.html.peb", map))
+        }
+        post("/admin/createaccount") {
+            val user = call.principal<UserSession>()?.let { userDao.read(it.userId) }
+            if (user == null || !user.admin) {
+                call.respond(HttpStatusCode.NotFound)
+                return@post
+            }
+
+            val map = HashMap<String, Any>()
+            map["user"] = user
+            // Todo if logged on, redirect to accounts list
+            call.respond(HttpStatusCode.OK, PebbleContent("pages/admin/post_createaccount.html.peb", map))
+        }
     }
 }

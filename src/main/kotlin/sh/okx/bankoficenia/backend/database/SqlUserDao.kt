@@ -7,7 +7,14 @@ data class SqlUserDao(val dataSource: DataSource) {
     init {
         dataSource.connection.use {
             it.createStatement()
-                .execute("CREATE TABLE IF NOT EXISTS users (\"id\" BIGSERIAL, discord_id BIGINT UNIQUE, discord_username TEXT, discord_globalname TEXT, registered TIMESTAMP DEFAULT NOW(), PRIMARY KEY (\"id\"))")
+                .execute("CREATE TABLE IF NOT EXISTS users (" +
+                        "\"id\" BIGSERIAL," +
+                        "discord_id BIGINT UNIQUE," +
+                        "discord_username TEXT," +
+                        "discord_globalname TEXT," +
+                        "admin BOOL NOT NULL DEFAULT FALSE," +
+                        "registered TIMESTAMP DEFAULT NOW()," +
+                        "PRIMARY KEY (\"id\"))")
         }
     }
 
@@ -25,6 +32,7 @@ data class SqlUserDao(val dataSource: DataSource) {
                 resultSet.getLong("discord_id"),
                 resultSet.getString("discord_username"),
                 resultSet.getString("discord_globalname"),
+                resultSet.getBoolean("admin"),
                 resultSet.getTimestamp("registered").toLocalDateTime()
             )
         }
@@ -33,10 +41,16 @@ data class SqlUserDao(val dataSource: DataSource) {
     fun getOrCreateUser(discordId: Long, discordUsername: String, discordGlobalname: String): Long? {
         dataSource.connection.use {
 
-            val stmt = it.prepareStatement("INSERT INTO users (discord_id, discord_username, discord_globalname) VALUES (?, ?, ?) ON CONFLICT DO NOTHING RETURNING id")
+            val stmt = it.prepareStatement("INSERT INTO users (discord_id, discord_username, discord_globalname) " +
+                    "VALUES (?, ?, ?) " +
+                    "ON CONFLICT DO UPDATE SET discord_id = ?, discord_username = ?, discord_globalname = ? " +
+                    "RETURNING id")
             stmt.setLong(1, discordId)
             stmt.setString(2, discordUsername)
             stmt.setString(3, discordGlobalname)
+            stmt.setLong(4, discordId)
+            stmt.setString(5, discordUsername)
+            stmt.setString(6, discordGlobalname)
             val resultSet = stmt.executeQuery()
             if (!resultSet.next()) {
                 val stmt2 = it.prepareStatement("SELECT \"id\" FROM users WHERE discord_id = ?")

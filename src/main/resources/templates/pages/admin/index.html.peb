@@ -1,0 +1,6 @@
+{% extends "admin.html.peb" %}
+{% block body %}
+<main class="p-4">
+    <p>Welcome to the Bank of Icenia admin panel.</p>
+</main>
+{% endblock %}

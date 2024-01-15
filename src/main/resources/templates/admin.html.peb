@@ -3,34 +3,25 @@
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <title>Bank of Icenia</title>
+        <title>Bank of Icenia (admin)</title>
         <link href="/static/assets/css/bootstrap.min.css" rel="stylesheet">
         {% block head %}{% endblock %}
     </head>
     <body class="mx-auto" style="max-width: 100em">
         <nav class="navbar navbar-expand-sm bg-dark-subtle m-40 d-flex flex-wrap">
             <div class="container-fluid">
-                <a class="navbar-brand" href="/">Bank of Icenia</a>
+                <a class="navbar-brand" href="/admin">Bank of Icenia (admin)</a>
                 <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                     <li class="nav-item">
-                        <a class="nav-link {% if selected == "accounts" %}active{% endif %}" href="/accounts">Accounts</a>
+                        <a class="nav-link" href="/">Bank</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link {% if selected == "transfers" %}active{% endif %}" href="/transfers">Transfers</a>
+                        <a class="nav-link {% if selected == "createaccount" %}active{% endif %}" href="/admin/createaccount">Create account</a>
                     </li>
-                    {% if user is not null and user.admin %}
-                    <li class="nav-item">
-                        <a class="nav-link" href="/admin">Admin</a>
-                    </li>
-                    {% endif %}
                 </ul>
                 <ul class="navbar-nav">
                     <li class="nav-item">
-                        {% if user is not null %}
                         <a class="nav-link" href="/logout">Logout</a>
-                        {% else %}
-                        <a class="nav-link" href="/login">Login</a>
-                        {% endif %}
                     </li>
                 </ul>
             </div>
