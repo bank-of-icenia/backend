@@ -1,0 +1,10 @@
+{% extends "parent.html.peb" %}
+{% block body %}
+<main class="p-4">
+{% if user is not null %}
+<p>Welcome to the Bank of Icenia. Please select an option from the navigation bar.</p>
+{% else %}
+<p>Welcome log in or do whatever please</p>
+{% endif %}
+</main>
+{% endblock %}

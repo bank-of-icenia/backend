@@ -1,0 +1,54 @@
+    {% extends "parent.html.peb" %}
+        {% set selected = "accounts" %}
+    {% block body %}
+    <main class="p-4">
+        <h4>Transfer</h4>
+        <ol>
+            <li class="fw-bold">Enter transaction details</li>
+            <li>Confirm transaction details</li>
+            <li>Summary</li>
+        </ol>
+        <div class="border border-dark-subtle mb-4 p-2">
+            <h5>Transfer between own accounts</h5>
+            <form action="/account/id/transfer/confirm" method="post">
+                <label for="own-account-from" class="fw-bold my-2">Account to transfer from:</label>
+                <br>
+                <select id="own-account-from" class="my-2 mb-4" name="from">
+                    <option value="">Account</option>
+                </select>
+                <br>
+                <label for="own-account-to" class="fw-bold my-2">Account to transfer to:</label>
+                <br>
+                <select id="own-account-to" class="my-2 mb-4" name="to">
+                    <option value="">Account</option>
+                </select>
+                <br>
+                <label for="own-account-amount" class="fw-bold my-2">Amount:</label>
+                <br>
+                <input id="own-account-amount" type="number" class="mb-4"> diamonds
+                <br>
+                <input type="submit" value="Continue">
+            </form>
+        </div>
+        <div class="border border-dark-subtle mb-4 p-2">
+            <h5>Transfer to other bank account</h5>
+            <form action="/account/id/transfer/confirm" method="post">
+                <label for="account-from" class="fw-bold my-2">Account to transfer from:</label>
+                <br>
+                <select id="account-from" class="my-2 mb-4" name="from">
+                    <option value="">Account</option>
+                </select>
+                <br>
+                <label for="account-to" class="fw-bold my-2">Account to transfer to:</label>
+                <br>
+                <input type="text" placeholder="00-00-00" class="my-2 mb-4" name="account-to">
+                <br>
+                <label for="account-amount" class="fw-bold my-2">Amount:</label>
+                <br>
+                <input id="account-amount" type="number" class="mb-4"> diamonds
+                <br>
+                <input type="submit" value="Continue">
+            </form>
+        </div>
+    </main>
+    {% endblock %}

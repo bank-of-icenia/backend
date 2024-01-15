@@ -23,9 +23,13 @@ import sh.okx.bankoficenia.backend.database.getDataSource
 import sh.okx.bankoficenia.backend.model.UserSession
 import sh.okx.bankoficenia.backend.plugins.configureRouting
 import java.io.File
+import javax.sql.DataSource
 
 fun main() {
-    embeddedServer(Netty, port = 8080, host = "0.0.0.0", module = Application::module)
+    val config = HoconApplicationConfig(ConfigFactory.parseFile(File("backend.conf")))
+    val dataSource = getDataSource(config)
+    Database.connect(dataSource)
+    embeddedServer(Netty, port = 8080, host = "0.0.0.0", module = { module(config = config, dataSource = dataSource) })
         .start(wait = true)
 }
 
@@ -37,11 +41,7 @@ val applicationHttpClient = HttpClient(CIO) {
     }
 }
 
-fun Application.module(httpClient: HttpClient = applicationHttpClient) {
-    val config = HoconApplicationConfig(ConfigFactory.parseFile(File("backend.conf")))
-    val dataSource = getDataSource(config)
-    Database.connect(dataSource)
-
+fun Application.module(httpClient: HttpClient = applicationHttpClient, config: HoconApplicationConfig, dataSource: DataSource) {
     install(Pebble) {
         loader(ClasspathLoader().apply {
             prefix = "templates"
