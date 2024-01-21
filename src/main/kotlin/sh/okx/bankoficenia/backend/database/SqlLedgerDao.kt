@@ -7,6 +7,7 @@ import kotlin.collections.ArrayList
 data class SqlLedgerDao(val dataSource: DataSource) {
     init {
         dataSource.connection.use {
+            // sorry, postgres doesn't have CREATE TYPE IF NOT EXISTS!
             it.createStatement().execute("DO $$ BEGIN CREATE TYPE TRANSACTION_TYPE AS ENUM ('DEBIT', 'CREDIT'); EXCEPTION WHEN duplicate_object THEN null; END $$")
             it.createStatement()
                 .execute("CREATE TABLE IF NOT EXISTS ledger (" +
@@ -38,8 +39,8 @@ data class SqlLedgerDao(val dataSource: DataSource) {
                 }
             }
             val stmt = it.prepareStatement(
-                "SELECT account, SUM(amount) AS account_debit FROM ledger WHERE account IN ($arr) AND type = 'DEBIT' GROUP BY account UNION ALL " +
-                        "SELECT account, SUM(amount) AS amount_credit FROM ledger where account IN ($arr) AND type = 'CREDIT' GROUP BY account"
+                "SELECT account, SUM(amount) AS account_debit FROM ledger WHERE id IN ($arr) AND type = 'DEBIT' GROUP BY account UNION ALL " +
+                        "SELECT account, SUM(amount) AS amount_credit FROM ledger where id IN ($arr) AND type = 'CREDIT' GROUP BY account"
             )
             val balances = HashMap<Long, Double>()
             val resultSet = stmt.executeQuery()
