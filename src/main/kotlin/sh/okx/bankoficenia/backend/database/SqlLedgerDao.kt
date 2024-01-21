@@ -39,8 +39,8 @@ data class SqlLedgerDao(val dataSource: DataSource) {
                 }
             }
             val stmt = it.prepareStatement(
-                "SELECT account, SUM(amount) AS account_debit FROM ledger WHERE id IN ($arr) AND type = 'DEBIT' GROUP BY account UNION ALL " +
-                        "SELECT account, SUM(amount) AS amount_credit FROM ledger where id IN ($arr) AND type = 'CREDIT' GROUP BY account"
+                "SELECT account, SUM(amount) AS account_debit FROM ledger WHERE \"id\" IN ($arr) AND type = 'DEBIT' GROUP BY account UNION ALL " +
+                        "SELECT account, SUM(amount) AS amount_credit FROM ledger where \"id\" IN ($arr) AND type = 'CREDIT' GROUP BY account"
             )
             val balances = HashMap<Long, Double>()
             val resultSet = stmt.executeQuery()
