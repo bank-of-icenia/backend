@@ -20,9 +20,9 @@ if (this.checked) {
                 <input type="text" id="user-id" class="my-2 mb-4" name="user-id">
             </div>
             <div id="discord-input" style="display: none">
-                <label for="user-id" class="fw-bold my-2">Discord ID:</label>
+                <label for="discord-id" class="fw-bold my-2">Discord ID:</label>
                 <br>
-                <input type="text" id="discord-id" class="my-2 mb-4" name="user-id">
+                <input type="text" id="discord-id" class="my-2 mb-4" name="discord-id">
             </div>
             <br>
             <label for="account-name" class="fw-bold my-2">Account name:</label>

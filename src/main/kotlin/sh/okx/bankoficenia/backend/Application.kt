@@ -17,9 +17,7 @@ import io.ktor.server.sessions.*
 import io.pebbletemplates.pebble.loader.ClasspathLoader
 import kotlinx.serialization.json.Json
 import org.jetbrains.exposed.sql.Database
-import sh.okx.bankoficenia.backend.database.SqlSessionDao
-import sh.okx.bankoficenia.backend.database.SqlUserDao
-import sh.okx.bankoficenia.backend.database.getDataSource
+import sh.okx.bankoficenia.backend.database.*
 import sh.okx.bankoficenia.backend.model.UserSession
 import sh.okx.bankoficenia.backend.plugins.Extensions
 import sh.okx.bankoficenia.backend.plugins.configureRouting
@@ -97,5 +95,5 @@ fun Application.module(httpClient: HttpClient = applicationHttpClient, config: H
             }
         }
     }
-    configureRouting(httpClient, sessionDao, SqlUserDao(dataSource))
+    configureRouting(httpClient, sessionDao, SqlUserDao(dataSource), SqlAccountDao(dataSource), SqlLedgerDao(dataSource))
 }

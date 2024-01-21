@@ -1,0 +1,18 @@
+{% extends "admin.html.peb" %}
+{% block body %}
+<main class="p-4">
+    <h4>User {{ read_user.id }}</h4>
+    <p>
+        <b>Discord ID: </b>{{ read_user.discordId }}
+        <br>
+        <b>Discord username: </b>{{ read_user.discordUsername }}
+        <br>
+        <b>Discord globalname: </b>{{ read_user.discordGlobalname }}
+        <br>
+        <b>Registered: </b>{{ read_user.registered }}
+        <br>
+        <b>Admin: </b>{{ read_user.admin }}
+    </p>
+    <h5>Accounts</h5>
+</main>
+{% endblock %}
