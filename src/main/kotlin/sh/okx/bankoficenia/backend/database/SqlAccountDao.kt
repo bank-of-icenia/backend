@@ -9,6 +9,7 @@ data class SqlAccountDao(val dataSource: DataSource) {
 
     init {
         dataSource.connection.use {
+            // TODO add in game name as well?
             it.createStatement()
                 .execute(
                     "CREATE TABLE IF NOT EXISTS accounts (" +

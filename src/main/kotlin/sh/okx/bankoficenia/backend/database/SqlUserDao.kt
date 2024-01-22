@@ -87,7 +87,7 @@ data class SqlUserDao(val dataSource: DataSource) {
             val stmt = it.prepareStatement(
                 "INSERT INTO users (discord_id, discord_username, discord_globalname) " +
                         "VALUES (?, ?, ?) " +
-                        "ON CONFLICT DO UPDATE SET discord_id = ?, discord_username = ?, discord_globalname = ? " +
+                        "ON CONFLICT (discord_id) DO UPDATE SET discord_id = ?, discord_username = ?, discord_globalname = ? " +
                         "RETURNING id"
             )
             stmt.setLong(1, discordId)
