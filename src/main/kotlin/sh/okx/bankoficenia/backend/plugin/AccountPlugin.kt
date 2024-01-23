@@ -33,12 +33,10 @@ val AccountPlugin = createRouteScopedPlugin("AccountPlugin", { Configuration() }
             return@on
         }
         if (account != null && !account.closed && account.userId == user.id) {
-            if (pluginConfig.optionalAccount) {
-                call.attributes.put(KEY_ACCOUNT, account)
-            } else {
-                call.respond(HttpStatusCode.NotFound)
-                return@on
-            }
+            call.attributes.put(KEY_ACCOUNT, account)
+        } else if (!pluginConfig.optionalAccount) {
+            call.respond(HttpStatusCode.NotFound)
+            return@on
         }
 
         call.attributes.put(KEY_USER, user)
