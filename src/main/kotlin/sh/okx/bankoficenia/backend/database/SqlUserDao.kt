@@ -11,6 +11,7 @@ data class SqlUserDao(val dataSource: DataSource) {
                 .execute(
                     "CREATE TABLE IF NOT EXISTS users (" +
                             "\"id\" BIGSERIAL," +
+                            "ign TEXT UNIQUE," +
                             "discord_id BIGINT UNIQUE," +
                             "discord_username TEXT," +
                             "discord_globalname TEXT," +
@@ -31,6 +32,7 @@ data class SqlUserDao(val dataSource: DataSource) {
                 users.add(
                     User(
                         resultSet.getLong("id"),
+                        resultSet.getString("ign"),
                         resultSet.getLong("discord_id"),
                         resultSet.getString("discord_username"),
                         resultSet.getString("discord_globalname"),
@@ -55,6 +57,7 @@ data class SqlUserDao(val dataSource: DataSource) {
 
             return User(
                 resultSet.getLong("id"),
+                resultSet.getString("ign"),
                 resultSet.getLong("discord_id"),
                 resultSet.getString("discord_username"),
                 resultSet.getString("discord_globalname"),
@@ -64,15 +67,38 @@ data class SqlUserDao(val dataSource: DataSource) {
         }
     }
 
-    fun createUser(discordId: Long): Long? {
+    fun updateIgn(id: Long, ign: String): User? {
+        dataSource.connection.use {
+            val stmt = it.prepareStatement("UPDATE users SET ign = ? WHERE \"id\" = ? RETURNING *")
+            stmt.setString(1, ign)
+            stmt.setLong(2, id)
+            val resultSet = stmt.executeQuery()
+            if (!resultSet.next()) {
+                return null
+            }
+
+            return User(
+                resultSet.getLong("id"),
+                resultSet.getString("ign"),
+                resultSet.getLong("discord_id"),
+                resultSet.getString("discord_username"),
+                resultSet.getString("discord_globalname"),
+                resultSet.getBoolean("admin"),
+                resultSet.getTimestamp("registered").toLocalDateTime()
+            )
+        }
+    }
+
+    fun createUser(discordId: Long, ign: String): Long? {
         dataSource.connection.use {
             val stmt = it.prepareStatement(
-                "INSERT INTO users (discord_id) " +
-                        "VALUES (?) " +
+                "INSERT INTO users (discord_id, ign) " +
+                        "VALUES (?, ?) " +
                         "ON CONFLICT DO NOTHING " +
                         "RETURNING id"
             )
             stmt.setLong(1, discordId)
+            stmt.setString(2, ign)
             val resultSet = stmt.executeQuery()
             if (!resultSet.next()) {
                 return null

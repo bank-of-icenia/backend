@@ -1,12 +1,19 @@
-{% extends "parent.html.peb" %}
-{% set selected = "accounts" %}
+{% extends "admin.html.peb" %}
 {% block body %}
 <main class="p-4">
-    <h3>HOLDING ACCOUNT <span class="text-body-secondary">{{ account.code }}</span></h3>
+    <h4>Account {{ account.id }}</h4>
     <p>
-        <span class="text-body-secondary">Current balance: </span>{% include "snippets/balance.html.peb" %}
+        <b>User ID: </b><a href="/admin/user/{{ account.userId }}">{{ account.userId }}</a>
         <br>
-        <span class="text-body-secondary">Interest rate (gross): </span>1.5% pcm for the first 200d, 0.25% pcm between 200d and 1000d, 0.01% thereafter
+        <b>Code: </b>{{ account.code }}
+        <br>
+        <b>Reference name: </b>{{ account.referenceName }}
+        <br>
+        <b>Type: </b>{{ account.name }}
+        <br>
+        <b>Closed: </b>{{ account.closed }}
+        <br>
+        <b>Balance: </b>{% include "snippets/balance.html.peb" %}
     </p>
     <h4>Transactions</h4>
     <table class="table table-striped table-borderless border border-dark-subtle">

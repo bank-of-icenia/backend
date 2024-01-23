@@ -5,11 +5,13 @@
     margin-bottom: 15px;
 }
 </style>
+<script src="/static/assets/js/htmx.min.js"></script>
 {% endblock %}
 {% block body %}
 <main class="p-4">
     <h4>User {{ read_user.id }}</h4>
     <p>
+        {% include "snippets/editign.html.peb" %}
         <b>Discord ID: </b>{{ read_user.discordId }}
         <br>
         <b>Discord username: </b>{{ read_user.discordUsername }}
@@ -54,9 +56,9 @@
         <tbody>
             {% for account in accounts %}
             <tr>
-                <td><a href="/admin/account/{{ account.code }}">{{ account.code }}</a></td>
+                <td><a href="/admin/account/{{ account.id }}">{{ account.code }}</a></td>
                 <td>{{ account.name }}</td>
-                <td>&lt;BALANCE GOES HERE&gt;</td>
+                <td>{{ balances[loop.index] | numberformat("0.0000") }}d</td>
             </tr>
             {% endfor %}
         </tbody>

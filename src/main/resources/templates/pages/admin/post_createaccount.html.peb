@@ -7,7 +7,7 @@
         {% if message == "account_created" %}
         The account has been created.
         {% elseif message == "account_user_created" %}
-            The account and user have been created. The user has ID <a href="/admin/users/{{ userId }}">{{ userId }}</a>.
+            The account and user have been created. The user has ID <a href="/admin/user/{{ userId }}">{{ userId }}</a>.
         {% elseif message == "parameter_missing" %}
             The {{ parameter }} parameter is missing or not a number.
         {% elseif message == "user_exists" %}

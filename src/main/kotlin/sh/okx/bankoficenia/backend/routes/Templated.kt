@@ -13,9 +13,7 @@ import sh.okx.bankoficenia.backend.database.SqlAccountDao
 import sh.okx.bankoficenia.backend.database.SqlLedgerDao
 import sh.okx.bankoficenia.backend.database.SqlUserDao
 import sh.okx.bankoficenia.backend.model.UserSession
-import sh.okx.bankoficenia.backend.plugin.AccountPlugin
-import sh.okx.bankoficenia.backend.plugin.KEY_ACCOUNT
-import sh.okx.bankoficenia.backend.plugin.KEY_USER
+import sh.okx.bankoficenia.backend.plugin.*
 import java.math.BigDecimal
 import java.text.DecimalFormat
 import java.util.*
@@ -128,7 +126,7 @@ fun Route.templatedRoutes(userDao: SqlUserDao, accountDao: SqlAccountDao, ledger
             }
 
             val account = accountDao.read(fromId)
-            if (account == null) {
+            if (account?.code == null || account.closed || account.userId != call.attributes[KEY_USER].id) {
                 map["error"] = "account_does_not_exist"
                 call.respond(HttpStatusCode.BadRequest, PebbleContent("pages/account/transfer-confirm.html.peb", map))
                 return@post
@@ -180,7 +178,7 @@ fun Route.templatedRoutes(userDao: SqlUserDao, accountDao: SqlAccountDao, ledger
             }
 
             val account = accountDao.readByCode(fromId)
-            if (account == null) {
+            if (account == null || account.closed || account.userId != call.attributes[KEY_USER].id) {
                 call.respond(HttpStatusCode.BadRequest)
                 return@post
             }
@@ -203,34 +201,23 @@ fun Route.templatedRoutes(userDao: SqlUserDao, accountDao: SqlAccountDao, ledger
     }
 
     authenticate("session-cookie") {
+        install(AdminPlugin) { pluginUserDao = userDao }
         get("/admin") {
-            val user = call.principal<UserSession>()?.let { userDao.read(it.userId) }
-            if (user == null || !user.admin) {
-                call.respond(HttpStatusCode.NotFound)
-                return@get
-            }
+            val user = call.attributes[KEY_ADMIN_USER]
 
             val map = HashMap<String, Any>()
             map["user"] = user
             call.respond(HttpStatusCode.OK, PebbleContent("pages/admin/index.html.peb", map))
         }
         get("/admin/createaccount") {
-            val user = call.principal<UserSession>()?.let { userDao.read(it.userId) }
-            if (user == null || !user.admin) {
-                call.respond(HttpStatusCode.NotFound)
-                return@get
-            }
+            val user = call.attributes[KEY_ADMIN_USER]
 
             val map = HashMap<String, Any>()
             map["user"] = user
             call.respond(HttpStatusCode.OK, PebbleContent("pages/admin/createaccount.html.peb", map))
         }
         post("/admin/createaccount") {
-            val user = call.principal<UserSession>()?.let { userDao.read(it.userId) }
-            if (user == null || !user.admin) {
-                call.respond(HttpStatusCode.NotFound)
-                return@post
-            }
+            val user = call.attributes[KEY_ADMIN_USER]
 
             val parameters = call.receiveParameters()
             val userId: Long
@@ -247,7 +234,18 @@ fun Route.templatedRoutes(userDao: SqlUserDao, accountDao: SqlAccountDao, ledger
                     )
                     return@post
                 }
-                val userIdOpt = userDao.createUser(discordId)
+                val ign = parameters["ign"]
+                if (ign.isNullOrBlank()) {
+                    call.respond(
+                        HttpStatusCode.BadRequest,
+                        PebbleContent(
+                            "pages/admin/post_createaccount.html.peb",
+                            mapOf("message" to "parameter_missing", "parameter" to "ign")
+                        )
+                    )
+                    return@post
+                }
+                val userIdOpt = userDao.createUser(discordId, ign)
                 if (userIdOpt == null) {
                     call.respond(
                         HttpStatusCode.Conflict,
@@ -297,37 +295,73 @@ fun Route.templatedRoutes(userDao: SqlUserDao, accountDao: SqlAccountDao, ledger
             call.respond(HttpStatusCode.OK, PebbleContent("pages/admin/post_createaccount.html.peb", map))
         }
         get("/admin/users") {
-            val adminUser = call.principal<UserSession>()?.let { userDao.read(it.userId) }
-            if (adminUser == null || !adminUser.admin) {
-                call.respond(HttpStatusCode.NotFound)
-                return@get
-            }
+            val adminUser = call.attributes[KEY_ADMIN_USER]
 
             val map = HashMap<String, Any>()
             map["user"] = adminUser
             map["users"] = userDao.getUsers()
             call.respond(HttpStatusCode.OK, PebbleContent("pages/admin/users.html.peb", map))
         }
+        get("/admin/accounts") {
+            val adminUser = call.attributes[KEY_ADMIN_USER]
+
+            val map = HashMap<String, Any>()
+            map["user"] = adminUser
+            map["accounts"] = accountDao.getAllAccounts()
+            call.respond(HttpStatusCode.OK, PebbleContent("pages/admin/accounts.html.peb", map))
+        }
+    }
+    authenticate("session-cookie") {
+        install(AdminPlugin) { pluginUserDao = userDao }
+        install(UserPlugin) { pluginUserDao = userDao }
         get("/admin/user/{id}") {
-            val adminUser = call.principal<UserSession>()?.let { userDao.read(it.userId) }
-            if (adminUser == null || !adminUser.admin) {
-                call.respond(HttpStatusCode.NotFound)
-                return@get
-            }
-
-            val user = call.parameters["id"]?.toLongOrNull()?.let { userDao.read(it) }
-            if (user == null) {
-                call.respond(HttpStatusCode.NotFound)
-                return@get
-            }
-
+            val user = call.attributes[KEY_READ_USER]
+            val adminUser = call.attributes[KEY_ADMIN_USER]
             val accounts = accountDao.getAccounts(user.id)
 
             val map = HashMap<String, Any>()
             map["user"] = adminUser
             map["read_user"] = user
             map["accounts"] = accounts
+            map["balances"] = ledgerDao.getBalances(accounts.map { it.id })
             call.respond(HttpStatusCode.OK, PebbleContent("pages/admin/user.html.peb", map))
+        }
+        get("/admin/user/{id}/editign") {
+            val user = call.attributes[KEY_READ_USER]
+            call.respond(HttpStatusCode.OK, PebbleContent("snippets/editign_form.html.peb", mapOf("read_user" to user)))
+        }
+        put("/admin/user/{id}/editign") {
+            val readUser = call.attributes[KEY_READ_USER]
+
+            val parameters = call.receiveParameters()
+            val ign = parameters["ign"]
+            if (ign.isNullOrBlank()) {
+                call.respond(HttpStatusCode.BadRequest)
+                return@put
+            }
+            val user = userDao.updateIgn(readUser.id, ign)
+            if (user == null) {
+                call.respond(HttpStatusCode.NotFound)
+                return@put
+            }
+
+            call.respond(HttpStatusCode.OK, PebbleContent("snippets/editign.html.peb", mapOf("read_user" to user)))
+        }
+
+        get("/admin/user/{id}/readeditign") {
+            val user = call.attributes[KEY_READ_USER]
+            call.respond(HttpStatusCode.OK, PebbleContent("snippets/editign.html.peb", mapOf("read_user" to user)))
+        }
+    }
+    authenticate("session-cookie") {
+        install(AdminPlugin) { pluginUserDao = userDao }
+        install(AdminAccountPlugin) { pluginAccountDao = accountDao }
+
+        get("/admin/account/{id}") {
+            val account = call.attributes[KEY_ADMIN_ACCOUNT]
+            val transactions = ledgerDao.getTransactions(account.id)
+            call.respond(HttpStatusCode.OK, PebbleContent("pages/admin/account.html.peb",
+                mapOf("account" to account, "transactions" to transactions)))
         }
     }
 }

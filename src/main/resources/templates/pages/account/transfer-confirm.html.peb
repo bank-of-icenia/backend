@@ -27,9 +27,9 @@
                     <br>
                     <span class="text-body-secondary">Description: </span> {{ description }}
                 </p>
-                <input style="display: none" type="text" name="from" value="{{ from }}">
-                <input style="display: none" type="text" name="to" value="{{ to }}">
-                <input style="display: none" type="text" name="amount" value="{{ amount }}">
+                <input type="hidden" name="from" value="{{ from }}">
+                <input type="hidden" name="to" value="{{ to }}">
+                <input type="hidden" name="amount" value="{{ amount }}">
                 <textarea style="display: none" name="description">{{ description }}</textarea>
                 <input type="submit" value="Submit">
             </form>

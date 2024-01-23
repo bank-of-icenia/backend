@@ -1,0 +1,6 @@
+<form hx-put="/admin/user/{{ read_user.id }}/editign" hx-target="this" hx-swap="outerHTML">
+    <label for="ign"><b>IGN: </b></label>
+    <input type="text" name="ign" value="{{ read_user.ign }}" onfocus="this.select()">
+    <input type="submit" value="Submit">
+    <input type="button" hx-get="/admin/user/{{ read_user.id }}/readeditign" value="Cancel">
+</form>

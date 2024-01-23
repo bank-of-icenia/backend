@@ -10,7 +10,6 @@ import sh.okx.bankoficenia.backend.database.SqlUserDao
 import sh.okx.bankoficenia.backend.model.Account
 import sh.okx.bankoficenia.backend.model.User
 import sh.okx.bankoficenia.backend.model.UserSession
-import kotlin.properties.Delegates
 
 val KEY_USER = AttributeKey<User>("user")
 val KEY_ACCOUNT = AttributeKey<Account>("account")
@@ -19,7 +18,7 @@ val KEY_ACCOUNT = AttributeKey<Account>("account")
 class Configuration {
     lateinit var pluginUserDao: SqlUserDao
     lateinit var pluginAccountDao: SqlAccountDao
-    var optionalAccount by Delegates.notNull<Boolean>()
+    var optionalAccount: Boolean = false
 }
 
 // This plugin deduplicates some logic to make sure that there is a real account, it is opened, and the current user owns it

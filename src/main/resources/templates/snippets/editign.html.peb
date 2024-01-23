@@ -1,0 +1,4 @@
+<div id="ign-form">
+    <b>IGN: </b>{{ read_user.ign }}
+    <a href="javascript:void(0)" hx-target="#ign-form" hx-swap="outerHTML" hx-get="/admin/user/{{ read_user.id }}/editign">Edit</a>
+</div>

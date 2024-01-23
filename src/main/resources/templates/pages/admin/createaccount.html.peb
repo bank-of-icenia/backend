@@ -23,6 +23,10 @@ if (this.checked) {
                 <label for="discord-id" class="fw-bold my-2">Discord ID:</label>
                 <br>
                 <input type="text" id="discord-id" class="my-2 mb-4" name="discord-id">
+                <br>
+                <label for="ign" class="fw-bold my-2">IGN:</label>
+                <br>
+                <input type="text" id="ign" class="my-2 mb-4" name="ign">
             </div>
             <br>
             <label for="account-name" class="fw-bold my-2">Account name:</label>

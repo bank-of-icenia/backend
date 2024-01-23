@@ -1,0 +1,1 @@
+{% if transactions is empty %}0.0000{% else %}{{ transactions[0].runningTotal | numberformat("0.0000") }}{% endif %}d

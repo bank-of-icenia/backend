@@ -12,14 +12,19 @@ data class SqlAccountDao(val dataSource: DataSource) {
             // TODO add in game name as well?
             it.createStatement()
                 .execute(
+                    // There are two types of accounts:
+                    // User accounts - which have a user_id and code, but not reference_name
+                    // Admin accounts - which have a reference_name, but not a user_id or code. This means that they cannot be used as input in forms and cannot be transferred to.
                     "CREATE TABLE IF NOT EXISTS accounts (" +
                             "\"id\" BIGSERIAL," +
-                            "user_id BIGINT NOT NULL, " +
-                            "code VARCHAR(16) UNIQUE NOT NULL, " +
+                            "user_id BIGINT, " +
+                            "reference_name TEXT, " +
+                            "code VARCHAR(16) UNIQUE, " +
                             "name TEXT NOT NULL, " +
                             "closed BOOL NOT NULL DEFAULT FALSE, " +
                             "registered TIMESTAMP DEFAULT NOW(), " +
-                            "PRIMARY KEY (\"id\"))"
+                            "PRIMARY KEY (\"id\"), " +
+                            "CHECK (reference_name IS NOT NULL OR (user_id IS NOT NULL AND code IS NOT NULL)))"
                 );
         }
     }
@@ -55,10 +60,13 @@ data class SqlAccountDao(val dataSource: DataSource) {
             val resultSet = stmt.executeQuery()
             val accounts = ArrayList<Account>()
             while (resultSet.next()) {
+                val accUserId = resultSet.getLong("user_id")
+                val accUserIdNull = resultSet.wasNull()
                 accounts.add(Account(
                     resultSet.getLong("id"),
-                    resultSet.getLong("user_id"),
+                    if (accUserIdNull) null else accUserId,
                     resultSet.getString("code"),
+                    resultSet.getString("reference_name"),
                     resultSet.getString("name"),
                     resultSet.getBoolean("closed")
                 ))
@@ -69,15 +77,18 @@ data class SqlAccountDao(val dataSource: DataSource) {
 
     fun read(accountId: Long): Account? {
         dataSource.connection.use {
-            val stmt = it.prepareStatement("SELECT * FROM accounts WHERE id = ?")
+            val stmt = it.prepareStatement("SELECT * FROM accounts WHERE id = ? AND NOT closed")
             stmt.setLong(1, accountId)
 
             val resultSet = stmt.executeQuery()
             if (resultSet.next()) {
+                val accUserId = resultSet.getLong("user_id")
+                val accUserIdNull = resultSet.wasNull()
                 return Account(
                     resultSet.getLong("id"),
-                    resultSet.getLong("user_id"),
+                    if (accUserIdNull) null else accUserId,
                     resultSet.getString("code"),
+                    resultSet.getString("reference_name"),
                     resultSet.getString("name"),
                     resultSet.getBoolean("closed")
                 )
@@ -88,20 +99,45 @@ data class SqlAccountDao(val dataSource: DataSource) {
 
     fun readByCode(accountCode: String): Account? {
         dataSource.connection.use {
-            val stmt = it.prepareStatement("SELECT * FROM accounts WHERE code = ?")
+            val stmt = it.prepareStatement("SELECT * FROM accounts WHERE code = ? AND NOT closed")
             stmt.setString(1, accountCode)
 
             val resultSet = stmt.executeQuery()
             if (resultSet.next()) {
+                val accUserId = resultSet.getLong("user_id")
+                val accUserIdNull = resultSet.wasNull()
                 return Account(
                     resultSet.getLong("id"),
-                    resultSet.getLong("user_id"),
+                    if (accUserIdNull) null else accUserId,
                     resultSet.getString("code"),
+                    resultSet.getString("reference_name"),
                     resultSet.getString("name"),
                     resultSet.getBoolean("closed")
                 )
             }
             return null
+        }
+    }
+
+    fun getAllAccounts(): List<Account> {
+        dataSource.connection.use {
+            val stmt = it.prepareStatement("SELECT * FROM accounts")
+
+            val resultSet = stmt.executeQuery()
+            val accounts = ArrayList<Account>()
+            while (resultSet.next()) {
+                val accUserId = resultSet.getLong("user_id")
+                val accUserIdNull = resultSet.wasNull()
+                accounts.add(Account(
+                    resultSet.getLong("id"),
+                    if (accUserIdNull) null else accUserId,
+                    resultSet.getString("code"),
+                    resultSet.getString("reference_name"),
+                    resultSet.getString("name"),
+                    resultSet.getBoolean("closed")
+                ))
+            }
+            return accounts
         }
     }
 }
