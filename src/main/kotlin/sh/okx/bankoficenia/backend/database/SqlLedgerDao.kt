@@ -2,7 +2,6 @@ package sh.okx.bankoficenia.backend.database
 
 import sh.okx.bankoficenia.backend.model.Transaction
 import sh.okx.bankoficenia.backend.model.TransactionType
-import java.sql.Timestamp
 import java.util.*
 import javax.sql.DataSource
 import kotlin.collections.ArrayList
@@ -45,18 +44,15 @@ data class SqlLedgerDao(val dataSource: DataSource) {
                 }
             }
             val stmt = it.prepareStatement(
-                "SELECT account, SUM(amount) AS account_debit FROM ledger WHERE \"id\" IN ($arr) AND \"type\" = 'DEBIT' GROUP BY account UNION ALL " +
-                        "SELECT account, SUM(amount) AS amount_credit FROM ledger where \"id\" IN ($arr) AND \"type\" = 'CREDIT' GROUP BY account"
+                "SELECT account, SUM(CASE WHEN \"type\" = 'DEBIT' THEN amount ELSE -amount END) AS amount FROM ledger WHERE \"account\" IN ($arr) GROUP BY account"
             )
             for (i in accounts.indices) {
                 stmt.setLong(1 + i, accounts[i])
-                stmt.setLong(1 + i + accounts.size, accounts[i])
             }
             val balances = HashMap<Long, Double>()
             val resultSet = stmt.executeQuery()
             while (resultSet.next()) {
-                balances.merge(resultSet.getLong("account"), resultSet.getDouble("amount_debit"), Double::plus)
-                balances.merge(resultSet.getLong("account"), -resultSet.getDouble("amount_credit"), Double::plus)
+                balances[resultSet.getLong("account")] = resultSet.getDouble("amount")
             }
 
             val balancesArray = ArrayList<Double>(accounts.size)
@@ -69,7 +65,11 @@ data class SqlLedgerDao(val dataSource: DataSource) {
 
     fun getTransactions(account: Long): List<Transaction> {
         dataSource.connection.use {
-            val stmt = it.prepareStatement("SELECT * FROM ledger WHERE \"id\" = ? ORDER BY \"timestamp\" DESC")
+            val stmt = it.prepareStatement("SELECT *, accounts.code AS referenced_account_code, " +
+                    "SUM(CASE WHEN \"type\" = 'DEBIT' THEN amount ELSE -amount END) OVER (PARTITION BY \"account\" ORDER BY \"timestamp\") AS running_total " +
+                    "FROM ledger " +
+                    "LEFT JOIN accounts ON accounts.id = referenced_account " +
+                    "WHERE \"account\" = ? ORDER BY \"timestamp\" DESC")
             stmt.setLong(1, account)
 
             val resultSet = stmt.executeQuery()
@@ -79,15 +79,69 @@ data class SqlLedgerDao(val dataSource: DataSource) {
                     Transaction(
                         resultSet.getLong("id"),
                         resultSet.getLong("account"),
-                        resultSet.getLong("referenced_account"),
+                        resultSet.getString("referenced_account_code"),
                         TransactionType.valueOf(resultSet.getString("type")),
                         resultSet.getString("message"),
                         resultSet.getDouble("amount"),
-                        resultSet.getTimestamp("timestamp").toInstant()
+                        resultSet.getTimestamp("timestamp").toInstant(),
+                        resultSet.getDouble("running_total")
                     )
                 )
             }
             return transactions
+        }
+    }
+
+    fun ledge(accountFrom: Long, accountTo: Long, amount: String, description: String): Boolean {
+        dataSource.connection.use {
+            try {
+                it.autoCommit = false
+
+                // Shit but easy
+                it.createStatement().execute("LOCK TABLE ledger")
+
+                val stmt = it.prepareStatement(
+                    "SELECT SUM(CASE WHEN \"type\" = 'DEBIT' THEN amount ELSE -amount END) AS amount FROM ledger WHERE \"account\" = ?"
+                )
+                stmt.setLong(1, accountFrom)
+                var balance = "0"
+                val resultSet = stmt.executeQuery()
+                if (resultSet.next()) {
+                    balance = resultSet.getString("amount")
+                }
+
+                val balStmt = it.prepareStatement(
+                    "SELECT CAST(? AS NUMERIC(10, 4)) >= CAST(? AS NUMERIC(10, 4)) AS has_balance"
+                )
+                balStmt.setString(1, balance)
+                balStmt.setString(2, amount)
+
+                val balResultSet = balStmt.executeQuery()
+                if (!balResultSet.next()) {
+                    return false
+                }
+                val hasBalance = balResultSet.getBoolean("has_balance")
+                if (!hasBalance) {
+                    return false
+                }
+
+                val credit = it.prepareStatement("INSERT INTO ledger (account, referenced_account, \"type\", message, amount) VALUES (?, ?, 'CREDIT', ?, CAST(? AS NUMERIC(10, 4)))")
+                credit.setLong(1, accountFrom)
+                credit.setLong(2, accountTo)
+                credit.setString(3, description)
+                credit.setString(4, amount)
+                credit.executeUpdate()
+
+                val debit = it.prepareStatement("INSERT INTO ledger (account, referenced_account, \"type\", message, amount) VALUES (?, ?, 'DEBIT', ?, CAST(? AS NUMERIC(10, 4)))")
+                debit.setLong(1, accountTo)
+                debit.setLong(2, accountFrom)
+                debit.setString(3, description)
+                debit.setString(4, amount)
+                debit.executeUpdate()
+                return true
+            } finally {
+                it.autoCommit = true
+            }
         }
     }
 }

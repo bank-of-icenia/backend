@@ -85,4 +85,23 @@ data class SqlAccountDao(val dataSource: DataSource) {
             return null
         }
     }
+
+    fun readByCode(accountCode: String): Account? {
+        dataSource.connection.use {
+            val stmt = it.prepareStatement("SELECT * FROM accounts WHERE code = ?")
+            stmt.setString(1, accountCode)
+
+            val resultSet = stmt.executeQuery()
+            if (resultSet.next()) {
+                return Account(
+                    resultSet.getLong("id"),
+                    resultSet.getLong("user_id"),
+                    resultSet.getString("code"),
+                    resultSet.getString("name"),
+                    resultSet.getBoolean("closed")
+                )
+            }
+            return null
+        }
+    }
 }

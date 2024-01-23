@@ -17,13 +17,13 @@
                     <div class="col-6 text-end">
                         <select name="goto" onchange="javascript:
 if (this.options[this.selectedIndex].value === 'transfer') {
-    window.location = '/account/{{ account.id }}/transfer';
+    window.location = '/transfer?id={{ account.id }}';
 } if (this.options[this.selectedIndex].value === 'crosstransfer') {
-    window.location = '/account/{{ account.id }}/cross-bank-transfer';
+    window.location = '/cross-bank-transfer?id={{ account.id }}';
 } else if (this.options[this.selectedIndex].value === 'deposit') {
-    window.location = '/account/{{ account.id }}/deposit';
+    window.location = '/deposit?id={{ account.id }}';
 } else if (this.options[this.selectedIndex].value === 'withdraw') {
-    window.location = '/account/{{ account.id }}/withdraw';
+    window.location = '/withdraw?id={{ account.id }}';
 } else if (this.options[this.selectedIndex].value === 'transactions') {
     window.location = '/account/{{ account.id }}';
 }

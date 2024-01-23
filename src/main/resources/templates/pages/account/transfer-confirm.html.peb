@@ -1,0 +1,39 @@
+{% extends "parent.html.peb" %}
+{% set selected = "transfer" %}
+{% block body %}
+<main class="p-4">
+    <h4>Transfer</h4>
+    <ol>
+        <li>Enter transaction details</li>
+        <li class="fw-bold">Confirm transaction details</li>
+        <li>Summary</li>
+    </ol>
+    <div class="border border-dark-subtle mb-4 p-2">
+        <h5>Transfer between own accounts</h5>
+        {% if error == 'funds' %}
+            <p>Your account does not have enough funds for this transaction.<p>
+        {% elseif error == 'account_does_not_exist' %}
+            <p>You have typed in a destination account that does not exist.<p>
+        {% elseif error == 'generic' %}
+            <p>The input that you have provided is not valid.<p>
+        {% else %}
+            <form action="/transfer/submit" method="post">
+                <p>
+                    <span class="text-body-secondary">Account to transfer from: </span> {{ from }}
+                    <br>
+                    <span class="text-body-secondary">Account to transfer to: </span> {{ to }}
+                    <br>
+                    <span class="text-body-secondary">Amount: </span> {{ amount }}d
+                    <br>
+                    <span class="text-body-secondary">Description: </span> {{ description }}
+                </p>
+                <input style="display: none" type="text" name="from" value="{{ from }}">
+                <input style="display: none" type="text" name="to" value="{{ to }}">
+                <input style="display: none" type="text" name="amount" value="{{ amount }}">
+                <textarea style="display: none" name="description">{{ description }}</textarea>
+                <input type="submit" value="Submit">
+            </form>
+        {% endif %}
+    </div>
+</main>
+{% endblock %}

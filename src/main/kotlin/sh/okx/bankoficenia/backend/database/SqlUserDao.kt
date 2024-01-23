@@ -97,20 +97,9 @@ data class SqlUserDao(val dataSource: DataSource) {
             stmt.setString(5, discordUsername)
             stmt.setString(6, discordGlobalname)
             val resultSet = stmt.executeQuery()
-            // TODO test that commenting this out is fine
             if (!resultSet.next()) {
                 return null
             }
-//            if (!resultSet.next()) {
-//                val stmt2 = it.prepareStatement("SELECT \"id\" FROM users WHERE discord_id = ?")
-//                stmt2.setLong(1, discordId)
-//                val resultSet2 = stmt2.executeQuery()
-//                if (!resultSet2.next()) {
-//                    return null
-//                }
-//
-//                return resultSet2.getLong("id")
-//            }
 
             return resultSet.getLong("id")
         }

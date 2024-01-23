@@ -10,6 +10,7 @@ import sh.okx.bankoficenia.backend.database.SqlUserDao
 import sh.okx.bankoficenia.backend.model.Account
 import sh.okx.bankoficenia.backend.model.User
 import sh.okx.bankoficenia.backend.model.UserSession
+import kotlin.properties.Delegates
 
 val KEY_USER = AttributeKey<User>("user")
 val KEY_ACCOUNT = AttributeKey<Account>("account")
@@ -18,6 +19,7 @@ val KEY_ACCOUNT = AttributeKey<Account>("account")
 class Configuration {
     lateinit var pluginUserDao: SqlUserDao
     lateinit var pluginAccountDao: SqlAccountDao
+    var optionalAccount by Delegates.notNull<Boolean>()
 }
 
 // This plugin deduplicates some logic to make sure that there is a real account, it is opened, and the current user owns it
@@ -26,12 +28,14 @@ val AccountPlugin = createRouteScopedPlugin("AccountPlugin", { Configuration() }
         val user = call.principal<UserSession>()?.let { pluginConfig.pluginUserDao.read(it.userId) }
         val account = call.parameters["id"]?.toLongOrNull()?.let { pluginConfig.pluginAccountDao.read(it) }
 
-        if (user == null || account == null || account.closed || account.userId != user.id) {
+        if (user == null) {
             call.respond(HttpStatusCode.NotFound)
             return@on
         }
 
         call.attributes.put(KEY_USER, user)
-        call.attributes.put(KEY_ACCOUNT, account)
+        if (account != null && !account.closed && account.userId == user.id) {
+            call.attributes.put(KEY_ACCOUNT, account)
+        }
     }
 }

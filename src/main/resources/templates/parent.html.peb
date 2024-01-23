@@ -13,10 +13,16 @@
                 <a class="navbar-brand" href="/">Bank of Icenia</a>
                 <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                     <li class="nav-item">
-                        <a class="nav-link {% if selected == "accounts" %}active{% endif %}" href="/accounts">Accounts</a>
+                        <a class="nav-link {% if user is null %}disabled{% endif %} {% if selected == "accounts" %}active{% endif %}" href="/accounts">Accounts</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link {% if selected == "transfers" %}active{% endif %}" href="/transfers">Transfers</a>
+                        <a class="nav-link {% if user is null %}disabled{% endif %} {% if selected == "transfer" %}active{% endif %}" href="/transfer">Transfer</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if user is null %}disabled{% endif %} {% if selected == "deposit" %}active{% endif %}" href="/deposit">Deposit</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if user is null %}disabled{% endif %} {% if selected == "withdraw" %}active{% endif %}" href="/withdraw">Withdraw</a>
                     </li>
                     {% if user is not null and user.admin %}
                     <li class="nav-item">

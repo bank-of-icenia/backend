@@ -1,5 +1,5 @@
 {% extends "parent.html.peb" %}
-{% set selected = "accounts" %}
+{% set selected = "deposit" %}
 {% block body %}
 <main class="p-4">
     <h4>Deposit</h4>
@@ -10,7 +10,7 @@
     </ol>
     <div class="border border-dark-subtle mb-4 p-2">
         <h5>Deposit with a teller</h5>
-        <form action="/account/id/transfer/confirm" method="post">
+        <form action="/deposit/confirm" method="post">
             <label for="teller-account" class="fw-bold my-2">Account to deposit to:</label>
             <br>
             <select id="teller-account" class="my-2 mb-4" name="to">
@@ -20,30 +20,6 @@
             <label for="teller-info" class="fw-bold my-2">Additional information:</label>
             <br>
             <textarea id="teller-info" style="resize: both" class="my-2 mb-4"></textarea>
-            <br>
-            <input type="submit" value="Continue">
-        </form>
-    </div>
-    <div class="border border-dark-subtle mb-4 p-2">
-        <h5>Deposit with Monument Bank</h5>
-        <p>Please note that Monument Bank deposits are completed manually. You must first transfer the funds to our
-            Monument Bank holding account, and after we confirm it, you will receive your funds.</p>
-        <p>You must submit this form before you send any funds to our holding account, otherwise the funds will be
-            returned.</p>
-        <form action="/account/id/transfer/confirm" method="post">
-            <label for="monument-account-to" class="fw-bold my-2">Account to deposit to:</label>
-            <br>
-            <select id="monument-account-to" class="my-2 mb-4" name="to">
-                <option value="">Account</option>
-            </select>
-            <br>
-            <label for="monument-account-from" class="fw-bold my-2">Monument bank account:</label>
-            <br>
-            <input type="text" id="monument-account-from" class="my-2 mb-4" name="from" placeholder="HS-0000" maxlength="7" minlength="7">
-            <br>
-            <label for="account-amount" class="fw-bold my-2">Amount:</label>
-            <br>
-            <input id="account-amount" type="number" class="mb-4"> diamonds
             <br>
             <input type="submit" value="Continue">
         </form>
