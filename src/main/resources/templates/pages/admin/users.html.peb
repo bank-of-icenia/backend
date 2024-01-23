@@ -16,11 +16,11 @@
         <tbody>
         {% for user in users %}
         <tr>
-            <td><a href="/admin/user/{{ user.id }}">{{ user.id }}</a></td>
+            <td><a href="/admin/user/{{ user.id }}">{{ user.id | numberformat("0000") }}</a></td>
             <td>{{ user.discordId }}</td>
             <td>{{ user.discordUsername }}</td>
             <td>{{ user.discordGlobalname }}</td>
-            <td>{{ user.registered }}</td>
+            <td>{{ user.registered | niceDate }}</td>
             <td>{{ user.admin }}</td>
         </tr>
         {% endfor %}

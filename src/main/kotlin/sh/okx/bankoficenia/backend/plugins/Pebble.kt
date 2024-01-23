@@ -8,11 +8,16 @@ import io.pebbletemplates.pebble.operator.UnaryOperator
 import io.pebbletemplates.pebble.template.EvaluationContext
 import io.pebbletemplates.pebble.template.PebbleTemplate
 import io.pebbletemplates.pebble.tokenParser.TokenParser
+import java.time.LocalDateTime
+import java.time.ZoneOffset
+import java.time.format.DateTimeFormatter
 import java.util.*
 
 class Extensions : Extension {
     override fun getFilters(): MutableMap<String, Filter> {
-        return mutableMapOf()
+        return mutableMapOf(
+            "niceDate" to NiceDate()
+        )
     }
 
     override fun getTests(): MutableMap<String, Test> {
@@ -62,5 +67,24 @@ class RandomId : Function {
         lineNumber: Int
     ): Any {
         return UUID.randomUUID().toString().replace("-", "")
+    }
+}
+
+class NiceDate : Filter {
+    override fun getArgumentNames(): MutableList<String> {
+        return mutableListOf()
+    }
+
+    override fun apply(
+        input: Any?,
+        args: MutableMap<String, Any>?,
+        self: PebbleTemplate?,
+        context: EvaluationContext?,
+        lineNumber: Int
+    ): Any {
+        if (input is LocalDateTime) {
+            return DateTimeFormatter.RFC_1123_DATE_TIME.format(input.atOffset(ZoneOffset.UTC))
+        }
+        throw IllegalArgumentException("input is not a LocalDateTime!")
     }
 }
