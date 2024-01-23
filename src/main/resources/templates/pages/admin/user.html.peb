@@ -1,4 +1,11 @@
 {% extends "admin.html.peb" %}
+{% block head %}
+<style>
+.new-account-form-container {
+    margin-bottom: 15px;
+}
+</style>
+{% endblock %}
 {% block body %}
 <main class="p-4">
     <h4>User {{ read_user.id }}</h4>
@@ -14,6 +21,27 @@
         <b>Admin: </b>{{ read_user.admin }}
     </p>
     <h5>Accounts</h5>
+
+    <p class="d-inline-flex gap-1">
+        <a class="btn btn-primary" data-bs-toggle="collapse" href="#new-account-box" role="button" aria-expanded="false" aria-controls="new-account-box">
+            Create new account
+        </a>
+    </p>
+    <div class="collapse" id="new-account-box">
+        <div class="card card-body new-account-form-container">
+            <form action="/admin/createaccount" method="post">
+                {# TODO: Add CSRF #}
+                <input type="hidden" id="user-id" name="user-id" value="{{ read_user.id }}">
+                <input type="hidden" id="discord-id" name="discord-id" value="{{ read_user.discordId }}">
+
+                <label for="account-name" class="fw-bold my-2">Account name:</label><br>
+                <select id="account-name" class="my-2 mb-4" name="account-name">
+                    <option value="holdingaccount">Holding Account</option>
+                </select>
+                <input type="submit" value="Create">
+            </form>
+        </div>
+    </div>
 
     <table class="table table-striped table-borderless border border-dark-subtle">
         <thead>
