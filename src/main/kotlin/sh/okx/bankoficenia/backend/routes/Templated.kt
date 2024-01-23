@@ -321,9 +321,13 @@ fun Route.templatedRoutes(userDao: SqlUserDao, accountDao: SqlAccountDao, ledger
                 return@get
             }
 
+            val accounts = accountDao.getAccounts(user.id)
+            accounts.filter { !it.closed }
+
             val map = HashMap<String, Any>()
             map["user"] = adminUser
             map["read_user"] = user
+            map["accounts"] = accounts
             call.respond(HttpStatusCode.OK, PebbleContent("pages/admin/user.html.peb", map))
         }
     }
