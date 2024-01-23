@@ -11,6 +11,7 @@
     <div class="border border-dark-subtle mb-4 p-2">
         <h5>Transfer between own accounts</h5>
         <form action="/own-transfer/confirm" method="post">
+            <input type="hidden" name="csrf" value="{{ csrf }}">
             <label for="own-account-from" class="fw-bold my-2">Account to transfer from:</label>
             <br>
             <select id="own-account-from" class="my-2 mb-4" name="from">
@@ -41,6 +42,7 @@
     <div class="border border-dark-subtle mb-4 p-2">
         <h5>Transfer to other bank account</h5>
         <form action="/transfer/confirm" method="post">
+            <input type="hidden" name="csrf" value="{{ csrf }}">
             <label for="account-from" class="fw-bold my-2">Account to transfer from:</label>
             <br>
             <select id="account-from" class="my-2 mb-4" name="from">

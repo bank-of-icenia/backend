@@ -88,7 +88,7 @@ fun Application.module(httpClient: HttpClient = applicationHttpClient, config: H
         }
         session<String>("session-cookie") {
             validate { session ->
-                sessionDao.read(session)?.let { UserSession(it) }
+                sessionDao.read(session)
             }
             challenge {
             }

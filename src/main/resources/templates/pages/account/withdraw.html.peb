@@ -11,7 +11,7 @@
     <div class="border border-dark-subtle mb-4 p-2">
         <h5>Withdraw with a teller</h5>
         <form action="/account/id/transfer/confirm" method="post">
-            <input type="hidden" name="id" value="{{ randomid() }}"/>
+            <input type="hidden" name="csrf" value="{{ csrf }}">
             <label for="teller-account" class="fw-bold my-2">Account to withdraw from:</label>
             <br>
             <select id="teller-account" class="my-2 mb-4" name="to">

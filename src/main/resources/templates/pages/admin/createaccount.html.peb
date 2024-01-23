@@ -5,6 +5,7 @@
     <h4>Create account</h4>
     <div class="border border-dark-subtle mb-4 p-2">
         <form action="/admin/createaccount" method="post">
+            <input type="hidden" name="csrf" value="{{ csrf }}">
             <label class="mb-4 my-2"><input type="checkbox" name="create-user" id="create-user" onchange="javascript:
 if (this.checked) {
     document.getElementById('user-input').style.display = 'none';

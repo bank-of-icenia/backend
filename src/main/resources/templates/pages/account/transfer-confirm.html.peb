@@ -18,6 +18,7 @@
             <p>The input that you have provided is not valid.<p>
         {% else %}
             <form action="/transfer/submit" method="post">
+                <input type="hidden" name="csrf" value="{{ csrf }}">
                 <p>
                     <span class="text-body-secondary">Account to transfer from: </span> {{ from }}
                     <br>

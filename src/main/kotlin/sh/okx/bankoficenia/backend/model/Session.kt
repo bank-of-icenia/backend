@@ -13,4 +13,4 @@ suspend fun getSessionApi(
     return userSession
 }
 
-data class UserSession(val userId: Long) : Principal
+data class UserSession(val userId: Long, val csrf: String) : Principal

@@ -14,9 +14,9 @@ import sh.okx.bankoficenia.backend.database.SqlLedgerDao
 import sh.okx.bankoficenia.backend.database.SqlUserDao
 import sh.okx.bankoficenia.backend.model.UserSession
 import sh.okx.bankoficenia.backend.plugin.*
+import sh.okx.bankoficenia.backend.plugins.validateCsrf
 import java.math.BigDecimal
 import java.text.DecimalFormat
-import java.util.*
 import java.util.regex.Pattern
 
 val amountFormat = DecimalFormat("0.0000")
@@ -25,12 +25,13 @@ val descriptionRegex: Pattern = Pattern.compile("[,.!\"'$()?\\-_=+&*^%;:/0-9A-z]
 val codeRegex: Pattern = Pattern.compile("\\d\\d-\\d\\d-\\d\\d")
 
 fun Route.templatedRoutes(userDao: SqlUserDao, accountDao: SqlAccountDao, ledgerDao: SqlLedgerDao) {
+    install(CsrfPlugin)
     staticResources("/static", "static")
     authenticate("session-cookie", optional = true) {
         get("/") {
             val user = call.principal<UserSession>()?.let { userDao.read(it.userId) }
 
-            val map = HashMap<String, Any>()
+            val map = call.attributes[KEY_MAP]
             if (user != null) {
                 map["user"] = user
             }
@@ -45,7 +46,7 @@ fun Route.templatedRoutes(userDao: SqlUserDao, accountDao: SqlAccountDao, ledger
                 return@get
             }
 
-            val map = HashMap<String, Any>()
+            val map = call.attributes[KEY_MAP]
             val accounts = accountDao.getAccounts(user.id)
             map["accounts"] = accounts
             map["balances"] = ledgerDao.getBalances(accounts.map { it.id }).map { String.format("%.4f", it) }
@@ -61,7 +62,7 @@ fun Route.templatedRoutes(userDao: SqlUserDao, accountDao: SqlAccountDao, ledger
         get("/account/{id}") {
             val transactions = ledgerDao.getTransactions(call.attributes[KEY_ACCOUNT].id)
 
-            val map = HashMap<String, Any>()
+            val map = call.attributes[KEY_MAP]
 
             map["user"] = call.attributes[KEY_USER]
             map["account"] = call.attributes[KEY_ACCOUNT]
@@ -76,16 +77,17 @@ fun Route.templatedRoutes(userDao: SqlUserDao, accountDao: SqlAccountDao, ledger
             optionalAccount = true
         }
         get("/transfer") {
-            val map = HashMap<String, Any>()
+            val map = call.attributes[KEY_MAP]
             map["user"] = call.attributes[KEY_USER]
             if (call.attributes.contains(KEY_ACCOUNT)) {
                 map["account"] = call.attributes[KEY_ACCOUNT]
             }
             map["accounts"] = accountDao.getAccounts(call.attributes[KEY_USER].id)
+            map["csrf"] =
             call.respond(HttpStatusCode.OK, PebbleContent("pages/account/transfer.html.peb", map))
         }
         get("/deposit") {
-            val map = HashMap<String, Any>()
+            val map = call.attributes[KEY_MAP]
             map["user"] = call.attributes[KEY_USER]
             if (call.attributes.contains(KEY_ACCOUNT)) {
                 map["account"] = call.attributes[KEY_ACCOUNT]
@@ -93,7 +95,7 @@ fun Route.templatedRoutes(userDao: SqlUserDao, accountDao: SqlAccountDao, ledger
             call.respond(HttpStatusCode.OK, PebbleContent("pages/account/deposit.html.peb", map))
         }
         get("/withdraw") {
-            val map = HashMap<String, Any>()
+            val map = call.attributes[KEY_MAP]
             map["user"] = call.attributes[KEY_USER]
             if (call.attributes.contains(KEY_ACCOUNT)) {
                 map["account"] = call.attributes[KEY_ACCOUNT]
@@ -103,6 +105,8 @@ fun Route.templatedRoutes(userDao: SqlUserDao, accountDao: SqlAccountDao, ledger
 
         post("/transfer/confirm") {
             val parameters = call.receiveParameters()
+            if (!validateCsrf(call, parameters["csrf"])) return@post
+
             val fromId = parameters["from"]?.toLongOrNull()
             val toCode = parameters["to"]
             val amountStr = parameters["amount"]
@@ -110,7 +114,7 @@ fun Route.templatedRoutes(userDao: SqlUserDao, accountDao: SqlAccountDao, ledger
 
             val amountDec = amountStr?.toBigDecimalOrNull()
 
-            val map = HashMap<String, Any>()
+            val map = call.attributes[KEY_MAP]
             map["user"] = call.attributes[KEY_USER]
 
             if (amountStr == null || !amountRegex.matcher(amountStr).matches()
@@ -156,6 +160,7 @@ fun Route.templatedRoutes(userDao: SqlUserDao, accountDao: SqlAccountDao, ledger
         post("/transfer/submit") {
             // The user should not have changed any of these parameters so we don't need to bother with a good page
             val parameters = call.receiveParameters()
+            if (!validateCsrf(call, parameters["csrf"])) return@post
             val fromId = parameters["from"]
             val toCode = parameters["to"]
             val amountStr = parameters["amount"]
@@ -163,7 +168,7 @@ fun Route.templatedRoutes(userDao: SqlUserDao, accountDao: SqlAccountDao, ledger
 
             val amountDec = amountStr?.toBigDecimalOrNull()
 
-            val map = HashMap<String, Any>()
+            val map = call.attributes[KEY_MAP]
             map["user"] = call.attributes[KEY_USER]
 
             if (amountStr == null || !amountRegex.matcher(amountStr).matches()
@@ -205,14 +210,14 @@ fun Route.templatedRoutes(userDao: SqlUserDao, accountDao: SqlAccountDao, ledger
         get("/admin") {
             val user = call.attributes[KEY_ADMIN_USER]
 
-            val map = HashMap<String, Any>()
+            val map = call.attributes[KEY_MAP]
             map["user"] = user
             call.respond(HttpStatusCode.OK, PebbleContent("pages/admin/index.html.peb", map))
         }
         get("/admin/createaccount") {
             val user = call.attributes[KEY_ADMIN_USER]
 
-            val map = HashMap<String, Any>()
+            val map = call.attributes[KEY_MAP]
             map["user"] = user
             call.respond(HttpStatusCode.OK, PebbleContent("pages/admin/createaccount.html.peb", map))
         }
@@ -220,6 +225,7 @@ fun Route.templatedRoutes(userDao: SqlUserDao, accountDao: SqlAccountDao, ledger
             val user = call.attributes[KEY_ADMIN_USER]
 
             val parameters = call.receiveParameters()
+            if (!validateCsrf(call, parameters["csrf"])) return@post
             val userId: Long
             val createUser = "on" == parameters["create-user"]
             if (createUser) {
@@ -284,7 +290,7 @@ fun Route.templatedRoutes(userDao: SqlUserDao, accountDao: SqlAccountDao, ledger
                 return@post
             }
 
-            val map = HashMap<String, Any>()
+            val map = call.attributes[KEY_MAP]
             map["user"] = user
             if (createUser) {
                 map["message"] = "account_user_created"
@@ -297,7 +303,7 @@ fun Route.templatedRoutes(userDao: SqlUserDao, accountDao: SqlAccountDao, ledger
         get("/admin/users") {
             val adminUser = call.attributes[KEY_ADMIN_USER]
 
-            val map = HashMap<String, Any>()
+            val map = call.attributes[KEY_MAP]
             map["user"] = adminUser
             map["users"] = userDao.getUsers()
             call.respond(HttpStatusCode.OK, PebbleContent("pages/admin/users.html.peb", map))
@@ -305,7 +311,7 @@ fun Route.templatedRoutes(userDao: SqlUserDao, accountDao: SqlAccountDao, ledger
         get("/admin/accounts") {
             val adminUser = call.attributes[KEY_ADMIN_USER]
 
-            val map = HashMap<String, Any>()
+            val map = call.attributes[KEY_MAP]
             map["user"] = adminUser
             map["accounts"] = accountDao.getAllAccounts()
             call.respond(HttpStatusCode.OK, PebbleContent("pages/admin/accounts.html.peb", map))
@@ -319,7 +325,7 @@ fun Route.templatedRoutes(userDao: SqlUserDao, accountDao: SqlAccountDao, ledger
             val adminUser = call.attributes[KEY_ADMIN_USER]
             val accounts = accountDao.getAccounts(user.id)
 
-            val map = HashMap<String, Any>()
+            val map = call.attributes[KEY_MAP]
             map["user"] = adminUser
             map["read_user"] = user
             map["accounts"] = accounts
@@ -334,6 +340,7 @@ fun Route.templatedRoutes(userDao: SqlUserDao, accountDao: SqlAccountDao, ledger
             val readUser = call.attributes[KEY_READ_USER]
 
             val parameters = call.receiveParameters()
+            if (!validateCsrf(call, parameters["csrf"])) return@put
             val ign = parameters["ign"]
             if (ign.isNullOrBlank()) {
                 call.respond(HttpStatusCode.BadRequest)

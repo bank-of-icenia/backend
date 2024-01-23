@@ -1,4 +1,5 @@
 <form hx-put="/admin/user/{{ read_user.id }}/editign" hx-target="this" hx-swap="outerHTML">
+    <input type="hidden" name="csrf" value="{{ csrf }}">
     <label for="ign"><b>IGN: </b></label>
     <input type="text" name="ign" value="{{ read_user.ign }}" onfocus="this.select()">
     <input type="submit" value="Submit">
