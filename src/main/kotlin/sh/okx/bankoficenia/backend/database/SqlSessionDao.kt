@@ -18,7 +18,7 @@ data class SqlSessionDao(val dataSource: DataSource) {
         }
     }
 
-    fun read(id: String): Long {
+    fun read(id: String): Long? {
         return transaction {
             val session =
                 Sessions.select { (Sessions.sessionId eq id) and (Sessions.expiration greater CustomDateTimeFunction("NOW")) }
@@ -26,7 +26,7 @@ data class SqlSessionDao(val dataSource: DataSource) {
             if (session != null) {
                 return@transaction session[Sessions.userId]
             } else {
-                throw NoSuchElementException()
+                return@transaction null
             }
         }
     }
