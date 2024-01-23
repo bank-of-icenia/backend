@@ -322,7 +322,6 @@ fun Route.templatedRoutes(userDao: SqlUserDao, accountDao: SqlAccountDao, ledger
             }
 
             val accounts = accountDao.getAccounts(user.id)
-            accounts.filter { !it.closed }
 
             val map = HashMap<String, Any>()
             map["user"] = adminUser
