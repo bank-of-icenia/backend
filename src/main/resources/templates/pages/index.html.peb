@@ -4,7 +4,18 @@
     {% if user is not null %}
     <p>Welcome to the Bank of Icenia. Please select an option from the navigation bar.</p>
     {% else %}
-    <p>Welcome log in or do whatever please</p>
+    <p>Welcome to the Bank of Icenia. Please log in with Discord and then contact us on Discord to create an account.</p>
     {% endif %}
+    <p>Discord: <a href="https://discord.gg/dsZx7RHGV3">https://discord.gg/dsZx7RHGV3</a></p>
+    <p>
+        Our interest rates are calculated at midnight GMT once per day, and paid on the first day of every calendar month. Currently, we pay:
+        <ul>
+            <li>1.5%* (1.49% gross) per 30 days up to 200d</li>
+            <li>0.25%* (0.25% gross) per 30 days between 200d and 1000d</li>
+            <li>0.01%* (0.01% gross) per 30 days for balances exceeding 1000d</li>
+        </ul>
+        For instance, if you deposited 200d with us, you would earn 3d* after 30 days. If you deposited 1000d, you would earn 5d* after 30 days.
+    </p>
+    <p><em>*All calculated figures except gross interest are rounded down to 2 decimal places. Therefore, you will receive slightly more interest than specified here.</em></p>
 </main>
 {% endblock %}
