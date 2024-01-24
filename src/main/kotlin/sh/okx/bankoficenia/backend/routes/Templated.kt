@@ -21,7 +21,7 @@ import java.util.regex.Pattern
 
 val amountFormat = DecimalFormat("0.0000")
 val amountRegex: Pattern = Pattern.compile("\\d{0,10}(\\.\\d{1,4})?")
-val descriptionRegex: Pattern = Pattern.compile("[,.!\"'$()?\\-_=+&*^%;:/0-9A-z]{0,32}")
+val descriptionRegex: Pattern = Pattern.compile("[ ,.!\"'$()?\\-_=+&*^%;:/0-9A-z]{0,32}")
 val codeRegex: Pattern = Pattern.compile("\\d\\d-\\d\\d-\\d\\d")
 
 fun Route.templatedRoutes(userDao: SqlUserDao, accountDao: SqlAccountDao, ledgerDao: SqlLedgerDao) {
@@ -88,18 +88,22 @@ fun Route.templatedRoutes(userDao: SqlUserDao, accountDao: SqlAccountDao, ledger
         }
         get("/deposit") {
             val map = call.attributes[KEY_MAP]
-            map["user"] = call.attributes[KEY_USER]
+            val user = call.attributes[KEY_USER]
+            map["user"] = user
             if (call.attributes.contains(KEY_ACCOUNT)) {
                 map["account"] = call.attributes[KEY_ACCOUNT]
             }
+            map["accounts"] = accountDao.getAccounts(user.id)
             call.respond(HttpStatusCode.OK, PebbleContent("pages/account/deposit.html.peb", map))
         }
         get("/withdraw") {
             val map = call.attributes[KEY_MAP]
-            map["user"] = call.attributes[KEY_USER]
+            val user = call.attributes[KEY_USER]
+            map["user"] = user
             if (call.attributes.contains(KEY_ACCOUNT)) {
                 map["account"] = call.attributes[KEY_ACCOUNT]
             }
+            map["accounts"] = accountDao.getAccounts(user.id)
             call.respond(HttpStatusCode.OK, PebbleContent("pages/account/withdraw.html.peb", map))
         }
 
@@ -334,7 +338,9 @@ fun Route.templatedRoutes(userDao: SqlUserDao, accountDao: SqlAccountDao, ledger
         }
         get("/admin/user/{id}/editign") {
             val user = call.attributes[KEY_READ_USER]
-            call.respond(HttpStatusCode.OK, PebbleContent("snippets/editign_form.html.peb", mapOf("read_user" to user)))
+            val map = call.attributes[KEY_MAP]
+            map["read_user"] = user
+            call.respond(HttpStatusCode.OK, PebbleContent("snippets/editign_form.html.peb", map))
         }
         put("/admin/user/{id}/editign") {
             val readUser = call.attributes[KEY_READ_USER]
@@ -352,12 +358,16 @@ fun Route.templatedRoutes(userDao: SqlUserDao, accountDao: SqlAccountDao, ledger
                 return@put
             }
 
-            call.respond(HttpStatusCode.OK, PebbleContent("snippets/editign.html.peb", mapOf("read_user" to user)))
+            val map = call.attributes[KEY_MAP]
+            map["read_user"] = user
+            call.respond(HttpStatusCode.OK, PebbleContent("snippets/editign.html.peb", map))
         }
 
         get("/admin/user/{id}/readeditign") {
             val user = call.attributes[KEY_READ_USER]
-            call.respond(HttpStatusCode.OK, PebbleContent("snippets/editign.html.peb", mapOf("read_user" to user)))
+            val map = call.attributes[KEY_MAP]
+            map["read_user"] = user
+            call.respond(HttpStatusCode.OK, PebbleContent("snippets/editign.html.peb", map))
         }
     }
     authenticate("session-cookie") {
@@ -367,8 +377,10 @@ fun Route.templatedRoutes(userDao: SqlUserDao, accountDao: SqlAccountDao, ledger
         get("/admin/account/{id}") {
             val account = call.attributes[KEY_ADMIN_ACCOUNT]
             val transactions = ledgerDao.getTransactions(account.id)
-            call.respond(HttpStatusCode.OK, PebbleContent("pages/admin/account.html.peb",
-                mapOf("account" to account, "transactions" to transactions)))
+            val map = call.attributes[KEY_MAP]
+            map["account"] = account
+            map["transactions"] = transactions
+            call.respond(HttpStatusCode.OK, PebbleContent("pages/admin/account.html.peb", map))
         }
     }
 }

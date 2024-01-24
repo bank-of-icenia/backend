@@ -12,13 +12,11 @@ import io.ktor.server.config.*
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*
 import io.ktor.server.pebble.*
-import io.ktor.server.response.*
 import io.ktor.server.sessions.*
 import io.pebbletemplates.pebble.loader.ClasspathLoader
 import kotlinx.serialization.json.Json
 import org.jetbrains.exposed.sql.Database
 import sh.okx.bankoficenia.backend.database.*
-import sh.okx.bankoficenia.backend.model.UserSession
 import sh.okx.bankoficenia.backend.plugins.Extensions
 import sh.okx.bankoficenia.backend.plugins.configureRouting
 import java.io.File
@@ -28,7 +26,7 @@ fun main() {
     val config = HoconApplicationConfig(ConfigFactory.parseFile(File("backend.conf")))
     val dataSource = getDataSource(config)
     Database.connect(dataSource)
-    embeddedServer(Netty, port = 8080, host = "0.0.0.0", module = { module(config = config, dataSource = dataSource) })
+    embeddedServer(Netty, port = 8080, host = "127.0.0.1", module = { module(config = config, dataSource = dataSource) })
         .start(wait = true)
 }
 
@@ -70,7 +68,7 @@ fun Application.module(httpClient: HttpClient = applicationHttpClient, config: H
 
     install(Authentication) {
         oauth("auth-oauth-discord") {
-            urlProvider = { "http://localhost:8080/callback" }
+            urlProvider = { config.property("callback").getString() }
             providerLookup = {
                 OAuthServerSettings.OAuth2ServerSettings(
                     name = "discord",

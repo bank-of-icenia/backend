@@ -9,7 +9,7 @@
         <li>Summary</li>
     </ol>
     <div class="border border-dark-subtle mb-4 p-2">
-        <h5>Transfer between own accounts</h5>
+        <h5>Transfer to other bank account</h5>
         {% if error == 'funds' %}
             <p>Your account does not have enough funds for this transaction.<p>
         {% elseif error == 'account_does_not_exist' %}

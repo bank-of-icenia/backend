@@ -5,7 +5,7 @@ import io.ktor.server.auth.*
 import io.ktor.util.*
 import sh.okx.bankoficenia.backend.model.UserSession
 
-val KEY_CSRF = AttributeKey<String>("read_user")
+val KEY_CSRF = AttributeKey<String>("csrf")
 val KEY_MAP = AttributeKey<MutableMap<String, Any>>("map")
 
 

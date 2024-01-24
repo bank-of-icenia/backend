@@ -18,8 +18,6 @@
                         <select name="goto" onchange="javascript:
 if (this.options[this.selectedIndex].value === 'transfer') {
     window.location = '/transfer?id={{ account.id }}';
-} if (this.options[this.selectedIndex].value === 'crosstransfer') {
-    window.location = '/cross-bank-transfer?id={{ account.id }}';
 } else if (this.options[this.selectedIndex].value === 'deposit') {
     window.location = '/deposit?id={{ account.id }}';
 } else if (this.options[this.selectedIndex].value === 'withdraw') {
@@ -31,7 +29,6 @@ this.selectedIndex = 0;">
                             <option value="" selected disabled hidden>Go to...</option>
                             <option value="deposit">Arrange deposit</option>
                             <option value="withdraw">Arrange withdrawal</option>
-                            <option value="crosstransfer">Cross-bank transfer</option>
                             <option value="transfer">Transfer</option>
                             <option value="transactions">View transactions</option>
                         </select>

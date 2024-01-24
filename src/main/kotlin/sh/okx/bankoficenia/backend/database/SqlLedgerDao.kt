@@ -66,7 +66,7 @@ data class SqlLedgerDao(val dataSource: DataSource) {
     fun getTransactions(account: Long): List<Transaction> {
         dataSource.connection.use {
             val stmt = it.prepareStatement("SELECT *, COALESCE(accounts.reference_name, CASE WHEN users.ign IS NOT NULL THEN accounts.code || ' (' || users.ign || ')' ELSE accounts.code END) AS referenced_account_code, " +
-                    "SUM(CASE WHEN \"type\" = 'DEBIT' THEN amount ELSE -amount END) OVER (PARTITION BY \"account\" ORDER BY \"timestamp\") AS running_total " +
+                    "SUM(CASE WHEN \"type\" = 'DEBIT' THEN amount ELSE -amount END) OVER (PARTITION BY \"account\" ORDER BY \"timestamp\", ledger.id) AS running_total " +
                     "FROM ledger " +
                     "INNER JOIN accounts ON accounts.id = referenced_account " +
                     "LEFT JOIN users ON accounts.user_id = users.id " +

@@ -5,24 +5,34 @@
     <h4>Deposit</h4>
     <ol>
         <li class="fw-bold">Enter deposit details</li>
-        <li>Confirm deposit details</li>
         <li>Summary</li>
     </ol>
     <div class="border border-dark-subtle mb-4 p-2">
         <h5>Deposit with a teller</h5>
-        <form action="/deposit/confirm" method="post">
+        <form action="/deposit/submit" method="post">
             <input type="hidden" name="csrf" value="{{ csrf }}">
-            <label for="teller-account" class="fw-bold my-2">Account to deposit to:</label>
+            <label for="account" class="fw-bold my-2">Account to deposit to:</label>
             <br>
-            <select id="teller-account" class="my-2 mb-4" name="to">
-                <option value="">Account</option>
+            <select id="account" class="my-2 mb-4" name="from">
+                    {% for saccount in accounts %}
+                    <option value="{{ saccount.id }}" {% if saccount.id == account.id %}selected{% endif %}>{{ saccount.name }} {{ saccount.code }}</option>
+                    {% endfor %}
             </select>
             <br>
             <label for="teller-info" class="fw-bold my-2">Additional information:</label>
             <br>
             <textarea id="teller-info" style="resize: both" class="my-2 mb-4"></textarea>
             <br>
-            <input type="submit" value="Continue">
+            <label for="pickup-method" class="fw-bold my-2">Preferred method of deposit:</label>
+            <br>
+            <select id="pickup-method" class="my-2 mb-4" name="to">
+                <option value="branch">Meet in a bank branch</option>
+                <option value="inperson">Meet elsewhere</option>
+                <option value="dropchest">Drop-chest near Icenia City</option>
+                <option value="other">Other</option>
+            </select>
+            <br>
+            <input type="submit" value="Submit">
         </form>
     </div>
     <p>Are you interested in depositing from another bank? Contact us through your Discord ticket and we will be able to facilitate the deposit.</p>
