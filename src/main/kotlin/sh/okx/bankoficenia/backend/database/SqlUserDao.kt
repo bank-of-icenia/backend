@@ -2,7 +2,6 @@ package sh.okx.bankoficenia.backend.database
 
 import sh.okx.bankoficenia.backend.model.User
 import javax.sql.DataSource
-import kotlin.collections.ArrayList
 
 data class SqlUserDao(val dataSource: DataSource) {
     init {
@@ -108,7 +107,7 @@ data class SqlUserDao(val dataSource: DataSource) {
         }
     }
 
-    fun getOrCreateUser(discordId: Long, discordUsername: String, discordGlobalname: String): Long? {
+    fun getOrCreateUser(discordId: Long, discordUsername: String, discordGlobalname: String?): Long? {
         dataSource.connection.use {
             val stmt = it.prepareStatement(
                 "INSERT INTO users (discord_id, discord_username, discord_globalname) " +

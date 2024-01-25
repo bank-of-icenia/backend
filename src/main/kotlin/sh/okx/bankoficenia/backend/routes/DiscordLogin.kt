@@ -14,7 +14,6 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import sh.okx.bankoficenia.backend.database.SqlSessionDao
 import sh.okx.bankoficenia.backend.database.SqlUserDao
-import sh.okx.bankoficenia.backend.model.UserSession
 import java.security.SecureRandom
 
 @OptIn(ExperimentalStdlibApi::class)
@@ -62,5 +61,5 @@ private suspend fun getDiscordUser(
 internal data class UserInfo(
     val id: Long,
     val username: String,
-    @SerialName("global_name") val globalname: String,
+    @SerialName("global_name") val globalname: String?,
 )
