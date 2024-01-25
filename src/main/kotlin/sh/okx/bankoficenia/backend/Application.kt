@@ -78,7 +78,7 @@ fun Application.module(
 
     install(Authentication) {
         oauth("auth-oauth-discord") {
-            urlProvider = { config.property("callback").getString() }
+            urlProvider = { config.property("discord.post_auth_dest").getString() }
             providerLookup = {
                 OAuthServerSettings.OAuth2ServerSettings(
                     name = "discord",
