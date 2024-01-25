@@ -45,7 +45,7 @@
                         <a class="nav-link text-white {% if user is null %}disabled{% endif %} {% if selected == "withdraw" %}active{% endif %}" href="/withdraw">Withdraw</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link text-white {% if user is null %}disabled{% endif %} {% if selected == "directory" %}active{% endif %}" href="/directory">Directory</a>
+                        <a class="nav-link text-white {% if selected == "directory" %}active{% endif %}" href="/directory">Directory</a>
                     </li>
                     {% if user is not null and user.admin %}
                     <li class="nav-item">

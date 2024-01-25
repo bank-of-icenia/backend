@@ -44,6 +44,16 @@ fun Route.templatedRoutes(
             }
             call.respond(HttpStatusCode.OK, PebbleContent("pages/index.html.peb", map))
         }
+        get("/directory") {
+            val user = call.principal<UserSession>()?.let { userDao.read(it.userId) }
+
+            val map = call.attributes[KEY_MAP]
+            if (user != null) {
+                map["user"] = user
+            }
+            map["directory"] = accountDao.getDirectoryAccounts()
+            call.respond(HttpStatusCode.OK, PebbleContent("pages/account/directory.html.peb", map))
+        }
     }
     authenticate("session-cookie") {
         get("/accounts") {
@@ -129,14 +139,6 @@ fun Route.templatedRoutes(
             map["accounts"] = accountDao.getAccounts(user.id)
             call.respond(HttpStatusCode.OK, PebbleContent("pages/account/withdraw.html.peb", map))
         }
-        get("/directory") {
-            val map = call.attributes[KEY_MAP]
-            val user = call.attributes[KEY_USER]
-            map["user"] = user
-            map["directory"] = accountDao.getDirectoryAccounts()
-            call.respond(HttpStatusCode.OK, PebbleContent("pages/account/directory.html.peb", map))
-        }
-
         post("/transfer/confirm") {
             val parameters = call.receiveParameters()
             if (!validateCsrf(call, parameters["csrf"])) return@post
