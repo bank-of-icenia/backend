@@ -10,6 +10,7 @@ import sh.okx.bankoficenia.backend.database.SqlLedgerDao
 import sh.okx.bankoficenia.backend.database.SqlSessionDao
 import sh.okx.bankoficenia.backend.database.SqlUserDao
 import sh.okx.bankoficenia.backend.routes.discordLoginRoute
+import sh.okx.bankoficenia.backend.routes.htmxRoutes
 import sh.okx.bankoficenia.backend.routes.templatedRoutes
 import sh.okx.bankoficenia.backend.routes.userInfoRoute
 
@@ -19,6 +20,7 @@ fun Application.configureRouting(httpClient: HttpClient, sessionDao: SqlSessionD
         discordLoginRoute(httpClient, sessionDao, userDao)
         templatedRoutes(userDao, accountDao, ledgerDao, httpClient, webhook, admin)
         resources()
+        htmxRoutes(userDao, accountDao, ledgerDao)
     }
 }
 

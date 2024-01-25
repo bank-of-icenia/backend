@@ -1,4 +1,5 @@
 {% extends "admin.html.peb" %}
+{% set selected = "accounts" %}
 {% block body %}
 <main class="p-4">
     <h4>Accounts</h4>

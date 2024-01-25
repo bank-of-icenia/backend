@@ -16,8 +16,6 @@
         <br>
         <b>Discord username: </b>{{ read_user.discordUsername }}
         <br>
-        <b>Discord globalname: </b>{{ read_user.discordGlobalname }}
-        <br>
         <b>Registered: </b>{{ read_user.registered | niceDate }}
         <br>
         <b>Admin: </b>{{ read_user.admin }}

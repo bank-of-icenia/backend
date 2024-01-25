@@ -1,0 +1,6 @@
+{% if state == "default" %}
+<slot- inject="#new-user-form"/>
+{% elseif state == "done" %}
+<p>User for <a href="/admin/user/{{ userId }}">{{ ign }}</a> has been created.</p>
+<p><a href="javascript:void(0);" hx-template="#new-user-form" hx-target=".new-user-form-container">Go back</a></p>
+{% endif %}
