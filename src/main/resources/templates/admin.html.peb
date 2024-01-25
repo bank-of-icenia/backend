@@ -28,7 +28,7 @@
                         </ul>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="/admin/reconcile">Reconcile</a>
+                        <a class="nav-link {% if selected == "reconcile" %}active{% endif %}" href="/admin/reconcile">Reconcile</a>
                     </li>
                 </ul>
                 <ul class="navbar-nav">

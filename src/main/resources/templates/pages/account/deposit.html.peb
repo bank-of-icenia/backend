@@ -15,13 +15,13 @@
             <br>
             <select id="account" class="my-2 mb-4" name="from">
                     {% for saccount in accounts %}
-                    <option value="{{ saccount.id }}" {% if saccount.id == account.id %}selected{% endif %}>{{ saccount.name }} {{ saccount.code }}</option>
+                    <option value="{{ saccount.code }}" {% if saccount.id == account.id %}selected{% endif %}>{{ saccount.name }} {{ saccount.code }}</option>
                     {% endfor %}
             </select>
             <br>
             <label for="teller-info" class="fw-bold my-2">Additional information:</label>
             <br>
-            <textarea id="teller-info" style="resize: both" class="my-2 mb-4"></textarea>
+            <textarea id="teller-info" style="resize: both" name="info" class="my-2 mb-4"></textarea>
             <br>
             <label for="pickup-method" class="fw-bold my-2">Preferred method of deposit:</label>
             <br>

@@ -7,6 +7,8 @@
         <tr>
             <th scope="col">ID</th>
             <th scope="col">User</th>
+            <th scope="col">IGN</th>
+            <th scope="col">Discord</th>
             <th scope="col">Code</th>
             <th scope="col">Reference name</th>
             <th scope="col">Type</th>
@@ -17,7 +19,9 @@
         {% for account in accounts %}
         <tr>
             <td><a href="/admin/account/{{ account.id }}">{{ account.id }}</a></td>
-            <td>{{ account.userId }}</td>
+            <td><a href="/admin/user/{{ account.userId }}">{{ account.userId }}</a></td>
+            <td>{{ account.userIgn }}</td>
+            <td>{{ account.userDiscord }}</td>
             <td>{{ account.code }}</td>
             <td>{{ account.referenceName }}</td>
             <td>{{ account.name }}</td>

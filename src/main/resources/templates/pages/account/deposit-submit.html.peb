@@ -1,0 +1,23 @@
+{% extends "parent.html.peb" %}
+{% set selected = "deposit" %}
+{% block body %}
+<main class="p-4">
+    <h4>Deposit</h4>
+    <ol>
+        <li>Enter deposit details</li>
+        <li class="fw-bold">Summary</li>
+    </ol>
+    <div class="border border-dark-subtle mb-4 p-2">
+        <h5>Deposit with a teller</h5>
+        <p>
+                {% if message == "success" %}
+                Your deposit request has been submitted, and a teller will be in contact with you shortly.
+                {% elseif message == "invalid" %}
+                The form has invalid parameters.
+                {% elseif message == "discord_failed" %}
+                An error prevented your deposit from being submitted, please try again.
+                {% endif %}
+        </p>
+    </div>
+</main>
+{% endblock %}

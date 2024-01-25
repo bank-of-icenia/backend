@@ -5,37 +5,60 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <title>Bank of Icenia</title>
         <link href="/static/assets/css/bootstrap.min.css" rel="stylesheet">
+        <style>
+            .logo {
+                position: relative;
+                bottom: 2px;
+            }
+            html {
+                background-image: linear-gradient(rgba(255, 255, 255, 0), rgba(255, 255, 255, 0)), url("/static/assets/img.png");
+                background-size: cover;
+                height: 100%;
+                min-height: 100dvh;
+            }
+            body {
+                background-color: #bcd2f4;
+                min-height: 100dvh;
+                border-left: 1px solid #715b29;
+                border-right: 1px solid #715b29;
+            }
+        </style>
         {% block head %}{% endblock %}
     </head>
     <body class="mx-auto" style="max-width: 100em">
-        <nav class="navbar navbar-expand-sm bg-dark-subtle m-40 d-flex flex-wrap">
+        <nav class="navbar navbar-expand-sm m-40 d-flex flex-wrap" style="background-color: #103165">
             <div class="container-fluid">
-                <a class="navbar-brand" href="/">Bank of Icenia</a>
+                <a class="navbar-brand text-white" href="/">
+                    <img src="/static/assets/bankoficenia.png" height="32" class="logo me-2">Bank of Icenia
+                </a>
                 <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                     <li class="nav-item">
-                        <a class="nav-link {% if user is null %}disabled{% endif %} {% if selected == "accounts" %}active{% endif %}" href="/accounts">Accounts</a>
+                        <a class="nav-link text-white {% if user is null %}disabled{% endif %} {% if selected == "accounts" %}active{% endif %}" href="/accounts">Accounts</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link {% if user is null %}disabled{% endif %} {% if selected == "transfer" %}active{% endif %}" href="/transfer">Transfer</a>
+                        <a class="nav-link text-white {% if user is null %}disabled{% endif %} {% if selected == "transfer" %}active{% endif %}" href="/transfer">Transfer</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link {% if user is null %}disabled{% endif %} {% if selected == "deposit" %}active{% endif %}" href="/deposit">Deposit</a>
+                        <a class="nav-link text-white {% if user is null %}disabled{% endif %} {% if selected == "deposit" %}active{% endif %}" href="/deposit">Deposit</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link {% if user is null %}disabled{% endif %} {% if selected == "withdraw" %}active{% endif %}" href="/withdraw">Withdraw</a>
+                        <a class="nav-link text-white {% if user is null %}disabled{% endif %} {% if selected == "withdraw" %}active{% endif %}" href="/withdraw">Withdraw</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-white {% if user is null %}disabled{% endif %} {% if selected == "directory" %}active{% endif %}" href="/directory">Directory</a>
                     </li>
                     {% if user is not null and user.admin %}
                     <li class="nav-item">
-                        <a class="nav-link" href="/admin">Admin</a>
+                        <a class="nav-link text-white" href="/admin">Admin</a>
                     </li>
                     {% endif %}
                 </ul>
                 <ul class="navbar-nav">
                     <li class="nav-item">
                         {% if user is not null %}
-                        <a class="nav-link" href="/logout">Logout</a>
+                        <a class="nav-link text-white" href="/logout">Logout</a>
                         {% else %}
-                        <a class="nav-link" href="/login">Login</a>
+                        <a class="nav-link text-white" href="/login">Login</a>
                         {% endif %}
                     </li>
                 </ul>

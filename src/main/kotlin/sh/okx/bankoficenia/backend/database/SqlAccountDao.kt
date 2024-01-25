@@ -1,6 +1,8 @@
 package sh.okx.bankoficenia.backend.database
 
 import sh.okx.bankoficenia.backend.model.Account
+import sh.okx.bankoficenia.backend.model.AccountAndUser
+import sh.okx.bankoficenia.backend.model.DirectoryAccount
 import java.security.SecureRandom
 import javax.sql.DataSource
 
@@ -23,6 +25,7 @@ data class SqlAccountDao(val dataSource: DataSource) {
                             "name TEXT NOT NULL, " +
                             "closed BOOL NOT NULL DEFAULT FALSE, " +
                             "registered TIMESTAMP DEFAULT NOW(), " +
+                            "in_directory BOOL NOT NULL DEFAULT FALSE, " +
                             "PRIMARY KEY (\"id\"), " +
                             "CHECK (reference_name IS NOT NULL OR (user_id IS NOT NULL AND code IS NOT NULL)))"
                 );
@@ -68,10 +71,21 @@ data class SqlAccountDao(val dataSource: DataSource) {
                     resultSet.getString("code"),
                     resultSet.getString("reference_name"),
                     resultSet.getString("name"),
-                    resultSet.getBoolean("closed")
+                    resultSet.getBoolean("closed"),
+                    resultSet.getBoolean("in_directory"),
                 ))
             }
             return accounts
+        }
+    }
+
+    fun setInDirectory(accountId: Long, inDirectory: Boolean): Boolean {
+        dataSource.connection.use {
+            val stmt = it.prepareStatement("UPDATE accounts SET in_directory = ? WHERE \"id\" = ? AND NOT closed")
+            stmt.setBoolean(1, inDirectory)
+            stmt.setLong(2, accountId)
+
+            return stmt.executeUpdate() > 0
         }
     }
 
@@ -90,7 +104,8 @@ data class SqlAccountDao(val dataSource: DataSource) {
                     resultSet.getString("code"),
                     resultSet.getString("reference_name"),
                     resultSet.getString("name"),
-                    resultSet.getBoolean("closed")
+                    resultSet.getBoolean("closed"),
+                    resultSet.getBoolean("in_directory"),
                 )
             }
             return null
@@ -112,7 +127,8 @@ data class SqlAccountDao(val dataSource: DataSource) {
                     resultSet.getString("code"),
                     resultSet.getString("reference_name"),
                     resultSet.getString("name"),
-                    resultSet.getBoolean("closed")
+                    resultSet.getBoolean("closed"),
+                    resultSet.getBoolean("in_directory"),
                 )
             }
             return null
@@ -134,7 +150,50 @@ data class SqlAccountDao(val dataSource: DataSource) {
                     resultSet.getString("code"),
                     resultSet.getString("reference_name"),
                     resultSet.getString("name"),
-                    resultSet.getBoolean("closed")
+                    resultSet.getBoolean("closed"),
+                    resultSet.getBoolean("in_directory"),
+                ))
+            }
+            return accounts
+        }
+    }
+
+    fun getAllAccountsAndUser(): List<AccountAndUser> {
+        dataSource.connection.use {
+            val stmt = it.prepareStatement("SELECT * FROM accounts LEFT JOIN users ON accounts.user_id = users.id")
+
+            val resultSet = stmt.executeQuery()
+            val accounts = ArrayList<AccountAndUser>()
+            while (resultSet.next()) {
+                val accUserId = resultSet.getLong("user_id")
+                val accUserIdNull = resultSet.wasNull()
+                accounts.add(AccountAndUser(
+                    resultSet.getLong("id"),
+                    if (accUserIdNull) null else accUserId,
+                    resultSet.getString("ign"),
+                    resultSet.getString("discord_globalname"),
+                    resultSet.getString("code"),
+                    resultSet.getString("reference_name"),
+                    resultSet.getString("name"),
+                    resultSet.getBoolean("closed"),
+                    resultSet.getBoolean("in_directory"),
+                ))
+            }
+            return accounts
+        }
+    }
+
+    fun getDirectoryAccounts(): List<DirectoryAccount> {
+        dataSource.connection.use {
+            val stmt = it.prepareStatement("SELECT ign, code FROM accounts INNER JOIN users ON accounts.user_id = users.id AND users.ign IS NOT NULL WHERE in_directory ORDER BY users.ign")
+
+            val resultSet = stmt.executeQuery()
+            val accounts = ArrayList<DirectoryAccount>()
+            while (resultSet.next()) {
+                accounts.add(
+                    DirectoryAccount(
+                    resultSet.getString("ign"),
+                    resultSet.getString("code"),
                 ))
             }
             return accounts

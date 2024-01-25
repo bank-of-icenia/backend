@@ -10,6 +10,7 @@ import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.config.*
 import io.ktor.server.engine.*
+import io.ktor.server.http.content.*
 import io.ktor.server.netty.*
 import io.ktor.server.pebble.*
 import io.ktor.server.sessions.*
@@ -59,6 +60,8 @@ fun Application.module(httpClient: HttpClient = applicationHttpClient, config: H
                 }
             }
             cookie.httpOnly = true
+            // cookie.secure doesn't work on localhost (because of silly ktor checks), but this does
+            cookie.extensions["Secure"] = null
             // TODO cookie secure
             // TODO cookie domain
 //            cookie.maxAgeInSeconds = // 7 days default
@@ -92,5 +95,5 @@ fun Application.module(httpClient: HttpClient = applicationHttpClient, config: H
             }
         }
     }
-    configureRouting(httpClient, sessionDao, SqlUserDao(dataSource), SqlAccountDao(dataSource), SqlLedgerDao(dataSource))
+    configureRouting(httpClient, sessionDao, SqlUserDao(dataSource), SqlAccountDao(dataSource), SqlLedgerDao(dataSource), config.property("discord.webhook").getString())
 }

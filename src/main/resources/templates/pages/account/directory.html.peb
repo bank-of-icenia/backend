@@ -1,0 +1,22 @@
+{% extends "parent.html.peb" %}
+{% block body %}
+<main class="p-4">
+    <h4>Account Directory</h4>
+    <table class="table table-striped table-borderless border border-dark-subtle">
+        <thead>
+        <tr>
+            <th scope="col">IGN</th>
+            <th scope="col">Account</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for account in directory %}
+        <tr>
+            <td>{{ account.ign }}</td>
+            <td>{{ account.code }}</td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</main>
+{% endblock %}

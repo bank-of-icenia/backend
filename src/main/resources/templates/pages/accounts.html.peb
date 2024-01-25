@@ -7,7 +7,7 @@
             <li class="list-group-item border-dark-subtle">
                 <div class="row align-items-center">
                     <div class="col-4">
-                        <a href="/account/{{ account.id }}">{{ account.name | upper }}</a>
+                        <a href="/account/{{ account.code }}">{{ account.name | upper }}</a>
                         <br>
                         <span class="text-secondary">{{ account.code }}</span>
                     </div>
@@ -17,13 +17,13 @@
                     <div class="col-6 text-end">
                         <select name="goto" onchange="javascript:
 if (this.options[this.selectedIndex].value === 'transfer') {
-    window.location = '/transfer?id={{ account.id }}';
+    window.location = '/transfer?id={{ account.code }}';
 } else if (this.options[this.selectedIndex].value === 'deposit') {
-    window.location = '/deposit?id={{ account.id }}';
+    window.location = '/deposit?id={{ account.code }}';
 } else if (this.options[this.selectedIndex].value === 'withdraw') {
-    window.location = '/withdraw?id={{ account.id }}';
+    window.location = '/withdraw?id={{ account.code }}';
 } else if (this.options[this.selectedIndex].value === 'transactions') {
-    window.location = '/account/{{ account.id }}';
+    window.location = '/account/{{ account.code }}';
 }
 this.selectedIndex = 0;">
                             <option value="" selected disabled hidden>Go to...</option>

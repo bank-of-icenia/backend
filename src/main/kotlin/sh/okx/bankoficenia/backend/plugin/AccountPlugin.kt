@@ -25,7 +25,7 @@ class Configuration {
 val AccountPlugin = createRouteScopedPlugin("AccountPlugin", { Configuration() }) {
     on(AuthenticationChecked) { call ->
         val user = call.principal<UserSession>()?.let { pluginConfig.pluginUserDao.read(it.userId) }
-        val account = call.parameters["id"]?.toLongOrNull()?.let { pluginConfig.pluginAccountDao.read(it) }
+        val account = call.parameters["id"]?.let { pluginConfig.pluginAccountDao.readByCode(it) }
 
         if (user == null) {
             call.respond(HttpStatusCode.NotFound)

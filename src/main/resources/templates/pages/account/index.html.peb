@@ -1,13 +1,28 @@
 {% extends "parent.html.peb" %}
 {% set selected = "accounts" %}
+{% block head %}
+<script src="/static/assets/js/htmx.min.js"></script>
+{% endblock %}
 {% block body %}
 <main class="p-4">
     <h3>HOLDING ACCOUNT <span class="text-body-secondary">{{ account.code }}</span></h3>
     <p>
         <span class="text-body-secondary">Current balance: </span>{% include "snippets/balance.html.peb" %}
         <br>
-        <span class="text-body-secondary">Interest rate (gross): </span>1.49% pcm for the first 200d, 0.25% pcm between 200d and 1000d, 0.01% thereafter
+        <span class="text-body-secondary">Interest rate (gross): </span>1.49% per 30 days for the first 200d, 0.25% per 30 days between 200d and 1000d, 0.01% per 30 days thereafter
+        <br>
     </p>
+    <form>
+    <label>
+        <p>Let other people find my account in the public directory
+        <input type="hidden" name="csrf" value="{{  csrf }}">
+        <input type="checkbox" name="directorycheckbox"
+               hx-post="/account/{{ account.code }}/showindirectory"
+               autocomplete="off"
+               {% if account.inDirectory %}checked{% else %}hx-confirm="This will show your account number and IGN on the public directory, and nothing else. Please confirm that you wish for this information to be public."{% endif %}>
+        </p>
+    </label>
+    </form>
     <h4>Transactions</h4>
     <table class="table table-striped table-borderless border border-dark-subtle">
         <thead>
@@ -34,4 +49,21 @@
         </tbody>
     </table>
 </main>
+<script>
+{# Fix weird behaviour where if you click 'cancel' the checkbox still toggles #}
+document.body.addEventListener('htmx:confirm', function(evt) {
+    evt.detail.elt.checked = !evt.detail.elt.checked
+});
+document.body.addEventListener('htmx:beforeRequest', function(evt) {
+    evt.detail.elt.checked = !evt.detail.elt.checked
+    let params = evt.detail.requestConfig.parameters;
+    if (params.directorycheckbox) {
+        evt.detail.elt.setAttribute("hx-confirm", "This will show your account number and IGN on the public directory, and nothing else. Please confirm that you wish for this information to be public.");
+        delete params.directorycheckbox;
+    } else {
+        evt.detail.elt.removeAttribute("hx-confirm");
+        params.directorycheckbox = 'on';
+    }
+});
+</script>
 {% endblock %}

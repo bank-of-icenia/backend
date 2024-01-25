@@ -6,6 +6,7 @@ import io.ktor.client.request.*
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
+import io.ktor.server.pebble.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.ktor.server.sessions.*
@@ -13,6 +14,7 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import sh.okx.bankoficenia.backend.database.SqlSessionDao
 import sh.okx.bankoficenia.backend.database.SqlUserDao
+import sh.okx.bankoficenia.backend.model.UserSession
 import java.security.SecureRandom
 
 @OptIn(ExperimentalStdlibApi::class)
@@ -37,6 +39,12 @@ fun Route.discordLoginRoute(httpClient: HttpClient, sessionDao: SqlSessionDao, u
                 }
             }
             call.respondRedirect("/")
+        }
+    }
+    authenticate("session-cookie", optional = true) {
+        get("/logout") {
+            call.sessions.get("id")?.let { sessionDao.invalidate(it as String) }
+            call.respond(HttpStatusCode.OK, PebbleContent("pages/logout.html.peb", mapOf()))
         }
     }
 }

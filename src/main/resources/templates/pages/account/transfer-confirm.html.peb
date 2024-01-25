@@ -16,6 +16,8 @@
             <p>You have typed in a destination account that does not exist.<p>
         {% elseif error == 'generic' %}
             <p>The input that you have provided is not valid.<p>
+        {% elseif error == 'self_transfer' %}
+            <p>You cannot transfer to yourself.<p>
         {% else %}
             <form action="/transfer/submit" method="post">
                 <input type="hidden" name="csrf" value="{{ csrf }}">
@@ -35,6 +37,7 @@
                 <input type="submit" value="Submit">
             </form>
         {% endif %}
+        <p><a href="javascript:void(0)" onclick="history.back()">Go back</a></p>
     </div>
 </main>
 {% endblock %}

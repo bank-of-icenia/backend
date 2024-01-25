@@ -4,7 +4,6 @@ import sh.okx.bankoficenia.backend.model.Transaction
 import sh.okx.bankoficenia.backend.model.TransactionType
 import java.util.*
 import javax.sql.DataSource
-import kotlin.collections.ArrayList
 
 data class SqlLedgerDao(val dataSource: DataSource) {
     init {
@@ -24,6 +23,19 @@ data class SqlLedgerDao(val dataSource: DataSource) {
                             "\"timestamp\" TIMESTAMP DEFAULT NOW(), " +
                             "PRIMARY KEY (\"id\"))"
                 )
+        }
+    }
+
+    fun reconcile(): String {
+        dataSource.connection.use {
+            val resultSet = it.createStatement()
+                .executeQuery("SELECT SUM(CASE WHEN \"type\" = 'DEBIT' THEN amount ELSE -amount END) AS amount FROM ledger")
+
+            if (!resultSet.next()) {
+                return "0.0000";
+            }
+
+            return resultSet.getString("amount")
         }
     }
 
@@ -65,12 +77,14 @@ data class SqlLedgerDao(val dataSource: DataSource) {
 
     fun getTransactions(account: Long): List<Transaction> {
         dataSource.connection.use {
-            val stmt = it.prepareStatement("SELECT *, COALESCE(accounts.reference_name, CASE WHEN users.ign IS NOT NULL THEN accounts.code || ' (' || users.ign || ')' ELSE accounts.code END) AS referenced_account_code, " +
-                    "SUM(CASE WHEN \"type\" = 'DEBIT' THEN amount ELSE -amount END) OVER (PARTITION BY \"account\" ORDER BY \"timestamp\", type DESC) AS running_total " +
-                    "FROM ledger " +
-                    "INNER JOIN accounts ON accounts.id = referenced_account " +
-                    "LEFT JOIN users ON accounts.user_id = users.id " +
-                    "WHERE \"account\" = ? ORDER BY \"timestamp\" DESC, type")
+            val stmt = it.prepareStatement(
+                "SELECT *, COALESCE(accounts.reference_name, CASE WHEN users.ign IS NOT NULL THEN accounts.code || ' (' || users.ign || ')' ELSE accounts.code END) AS referenced_account_code, " +
+                        "SUM(CASE WHEN \"type\" = 'DEBIT' THEN amount ELSE -amount END) OVER (PARTITION BY \"account\" ORDER BY \"timestamp\", type DESC) AS running_total " +
+                        "FROM ledger " +
+                        "INNER JOIN accounts ON accounts.id = referenced_account " +
+                        "LEFT JOIN users ON accounts.user_id = users.id " +
+                        "WHERE \"account\" = ? ORDER BY \"timestamp\" DESC, type"
+            )
             stmt.setLong(1, account)
 
             val resultSet = stmt.executeQuery()
@@ -126,14 +140,16 @@ data class SqlLedgerDao(val dataSource: DataSource) {
                     return false
                 }
 
-                val credit = it.prepareStatement("INSERT INTO ledger (account, referenced_account, \"type\", message, amount) VALUES (?, ?, 'CREDIT', ?, CAST(? AS NUMERIC(10, 4)))")
+                val credit =
+                    it.prepareStatement("INSERT INTO ledger (account, referenced_account, \"type\", message, amount) VALUES (?, ?, 'CREDIT', ?, CAST(? AS NUMERIC(10, 4)))")
                 credit.setLong(1, accountFrom)
                 credit.setLong(2, accountTo)
                 credit.setString(3, description)
                 credit.setString(4, amount)
                 credit.executeUpdate()
 
-                val debit = it.prepareStatement("INSERT INTO ledger (account, referenced_account, \"type\", message, amount) VALUES (?, ?, 'DEBIT', ?, CAST(? AS NUMERIC(10, 4)))")
+                val debit =
+                    it.prepareStatement("INSERT INTO ledger (account, referenced_account, \"type\", message, amount) VALUES (?, ?, 'DEBIT', ?, CAST(? AS NUMERIC(10, 4)))")
                 debit.setLong(1, accountTo)
                 debit.setLong(2, accountFrom)
                 debit.setString(3, description)

@@ -9,37 +9,6 @@
         <li>Summary</li>
     </ol>
     <div class="border border-dark-subtle mb-4 p-2">
-        <h5>Transfer between own accounts</h5>
-        <form action="/own-transfer/confirm" method="post">
-            <input type="hidden" name="csrf" value="{{ csrf }}">
-            <label for="own-account-from" class="fw-bold my-2">Account to transfer from:</label>
-            <br>
-            <select id="own-account-from" class="my-2 mb-4" name="from">
-                {% for saccount in accounts %}
-                <option value="{{ saccount.id }}" {% if saccount.id == account.id %}selected{% endif %}>{{ saccount.name }} {{ saccount.code }}</option>
-                {% endfor %}
-            </select>
-            <br>
-            <label for="own-account-to" class="fw-bold my-2">Account to transfer to:</label>
-            <br>
-            <select id="own-account-to" class="my-2 mb-4" name="to">
-                {% for saccount in accounts %}
-                    <option value="{{ saccount.id }}" >{{ saccount.name }} {{ saccount.code }}</option>
-                {% endfor %}
-            </select>
-            <br>
-            <label for="own-account-amount" class="fw-bold my-2">Amount:</label>
-            <br>
-            <input id="own-account-amount" type="number" step="0.0001" min="0" class="my-2 mb-4" required name="amount"> diamonds
-            <br>
-            <label for="own-teller-info" class="fw-bold my-2">Description:</label>
-            <br>
-            <textarea id="own-teller-info" style="resize: both" class="my-2 mb-4" name="description" maxlength="32"></textarea>
-            <br>
-            <input type="submit" value="Continue">
-        </form>
-    </div>
-    <div class="border border-dark-subtle mb-4 p-2">
         <h5>Transfer to other bank account</h5>
         <form action="/transfer/confirm" method="post">
             <input type="hidden" name="csrf" value="{{ csrf }}">
@@ -47,7 +16,7 @@
             <br>
             <select id="account-from" class="my-2 mb-4" name="from">
                 {% for saccount in accounts %}
-                <option value="{{ saccount.id }}" {% if saccount.id == account.id %}selected{% endif %}>{{ saccount.name }} {{ saccount.code }}</option>
+                <option value="{{ saccount.code }}" {% if saccount.code == account.code %}selected{% endif %}>{{ saccount.name }} {{ saccount.code }}</option>
                 {% endfor %}
             </select>
             <br>

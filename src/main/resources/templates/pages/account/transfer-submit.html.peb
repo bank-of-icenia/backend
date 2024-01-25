@@ -13,7 +13,7 @@
         {% if error == 'funds' %}
             <p>Your account does not have enough funds for this transaction, or an internal error occurred.<p>
         {% else %}
-            <p>Transfer complete. <a href="/account/{{ from.id }}">View transaction in your account.</a>
+            <p>Transfer complete. <a href="/account/{{ from.code }}">View transaction in your account.</a>
         {% endif %}
     </div>
 </main>

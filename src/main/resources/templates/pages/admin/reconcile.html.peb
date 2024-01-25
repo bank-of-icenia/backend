@@ -1,0 +1,25 @@
+{% extends "admin.html.peb" %}
+{% set selected = "reconcile" %}
+{% block body %}
+<main class="p-4">
+    <h4>Reconcile</h4>
+        {% if reconcile == "0.0000" %}
+    <p>Sum = 0. Reconciliation success.</p>
+    {% else %}
+    <div class="alert alert-warning">
+        Sum = {{ reconcile }}. Reconciliation failed!
+    </div>
+    {% endif %}
+</main>
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    if (document.getElementById("create-user").checked) {
+        document.getElementById('user-input').style.display = 'none';
+        document.getElementById('discord-input').style.display = 'unset';
+    } else {
+        document.getElementById('user-input').style.display = 'unset';
+        document.getElementById('discord-input').style.display = 'none';
+    }
+});
+</script>
+{% endblock %}
