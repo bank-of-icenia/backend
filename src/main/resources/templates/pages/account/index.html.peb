@@ -30,8 +30,8 @@
             <th class="bg-dark text-light">Date</th>
             <th class="bg-dark text-light">Account</th>
             <th class="bg-dark text-light">Description</th>
-            <th class="bg-dark text-light">Debit</th>
             <th class="bg-dark text-light">Credit</th>
+            <th class="bg-dark text-light">Debit</th>
             <th class="bg-dark text-light">Balance</th>
         </tr>
         </thead>
@@ -41,8 +41,8 @@
                 <td>{{ transaction.timestamp | date("yyyy-MM-dd HH:mm:ss") }}</td>
                 <td>{{ transaction.referencedAccount }}</td>
                 <td>{{ transaction.message }}</td>
-                <td>{% if transaction.type == 'DEBIT' %}{{ transaction.amount | numberformat("0.0000") }}d{% endif %}</td>
                 <td>{% if transaction.type == 'CREDIT' %}{{ transaction.amount | numberformat("0.0000") }}d{% endif %}</td>
+                <td>{% if transaction.type == 'DEBIT' %}{{ transaction.amount | numberformat("0.0000") }}d{% endif %}</td>
                 <td>{{ transaction.runningTotal | numberformat("0.0000") }}d</td>
             </tr>
             {% endfor %}

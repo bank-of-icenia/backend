@@ -2,6 +2,7 @@ package sh.okx.bankoficenia.backend.database
 
 import sh.okx.bankoficenia.backend.model.Account
 import sh.okx.bankoficenia.backend.model.AccountAndUser
+import sh.okx.bankoficenia.backend.model.AccountType
 import sh.okx.bankoficenia.backend.model.DirectoryAccount
 import java.security.SecureRandom
 import javax.sql.DataSource
@@ -11,7 +12,8 @@ data class SqlAccountDao(val dataSource: DataSource) {
 
     init {
         dataSource.connection.use {
-            // TODO add in game name as well?
+            it.createStatement()
+                .execute("DO $$ BEGIN CREATE TYPE ACCOUNT_TYPE AS ENUM ('DIVIDEND', 'EXPENSE', 'ASSET', 'LIABILITY', 'EQUITY', 'REVENUE'); EXCEPTION WHEN duplicate_object THEN null; END $$")
             it.createStatement()
                 .execute(
                     // There are two types of accounts:
@@ -23,12 +25,15 @@ data class SqlAccountDao(val dataSource: DataSource) {
                             "reference_name TEXT, " +
                             "code VARCHAR(16) UNIQUE, " +
                             "name TEXT NOT NULL, " +
+                            "account_type ACCOUNT_TYPE NOT NULL, " +
                             "closed BOOL NOT NULL DEFAULT FALSE, " +
                             "registered TIMESTAMP DEFAULT NOW(), " +
                             "in_directory BOOL NOT NULL DEFAULT FALSE, " +
                             "PRIMARY KEY (\"id\"), " +
                             "CHECK (reference_name IS NOT NULL OR (user_id IS NOT NULL AND code IS NOT NULL)))"
                 );
+            it.createStatement()
+                .execute("INSERT INTO accounts (\"id\", reference_name, name, account_type) VALUES (1, 'Bank of Icenia', 'Admin Account', 'ASSET') ON CONFLICT DO NOTHING")
         }
     }
 
@@ -36,7 +41,7 @@ data class SqlAccountDao(val dataSource: DataSource) {
         dataSource.connection.use {
             for (i in 1..100) {
                 val stmt =
-                    it.prepareStatement("INSERT INTO accounts (user_id, code, name) VALUES (?, ?, ?) ON CONFLICT DO NOTHING RETURNING \"id\"")
+                    it.prepareStatement("INSERT INTO accounts (user_id, code, name, account_type) VALUES (?, ?, ?, 'LIABILITY') ON CONFLICT DO NOTHING RETURNING \"id\"")
                 stmt.setLong(1, userId)
 
                 val nos = random.nextInt(99 * 99)
@@ -71,6 +76,7 @@ data class SqlAccountDao(val dataSource: DataSource) {
                     resultSet.getString("code"),
                     resultSet.getString("reference_name"),
                     resultSet.getString("name"),
+                    AccountType.valueOf(resultSet.getString("account_type")),
                     resultSet.getBoolean("closed"),
                     resultSet.getBoolean("in_directory"),
                 ))
@@ -104,6 +110,7 @@ data class SqlAccountDao(val dataSource: DataSource) {
                     resultSet.getString("code"),
                     resultSet.getString("reference_name"),
                     resultSet.getString("name"),
+                    AccountType.valueOf(resultSet.getString("account_type")),
                     resultSet.getBoolean("closed"),
                     resultSet.getBoolean("in_directory"),
                 )
@@ -127,6 +134,7 @@ data class SqlAccountDao(val dataSource: DataSource) {
                     resultSet.getString("code"),
                     resultSet.getString("reference_name"),
                     resultSet.getString("name"),
+                    AccountType.valueOf(resultSet.getString("account_type")),
                     resultSet.getBoolean("closed"),
                     resultSet.getBoolean("in_directory"),
                 )
@@ -135,32 +143,9 @@ data class SqlAccountDao(val dataSource: DataSource) {
         }
     }
 
-    fun getAllAccounts(): List<Account> {
-        dataSource.connection.use {
-            val stmt = it.prepareStatement("SELECT * FROM accounts")
-
-            val resultSet = stmt.executeQuery()
-            val accounts = ArrayList<Account>()
-            while (resultSet.next()) {
-                val accUserId = resultSet.getLong("user_id")
-                val accUserIdNull = resultSet.wasNull()
-                accounts.add(Account(
-                    resultSet.getLong("id"),
-                    if (accUserIdNull) null else accUserId,
-                    resultSet.getString("code"),
-                    resultSet.getString("reference_name"),
-                    resultSet.getString("name"),
-                    resultSet.getBoolean("closed"),
-                    resultSet.getBoolean("in_directory"),
-                ))
-            }
-            return accounts
-        }
-    }
-
     fun getAllAccountsAndUser(): List<AccountAndUser> {
         dataSource.connection.use {
-            val stmt = it.prepareStatement("SELECT * FROM accounts LEFT JOIN users ON accounts.user_id = users.id")
+            val stmt = it.prepareStatement("SELECT * FROM accounts LEFT JOIN users ON accounts.user_id = users.id ORDER BY accounts.id")
 
             val resultSet = stmt.executeQuery()
             val accounts = ArrayList<AccountAndUser>()

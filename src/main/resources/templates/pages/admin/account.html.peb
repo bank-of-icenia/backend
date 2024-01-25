@@ -11,6 +11,8 @@
         <br>
         <b>Type: </b>{{ account.name }}
         <br>
+        <b>Accounting Type: </b>{{ account.accountType }} ({{ account.accountType.isNormalDebit() ? 'DEBIT' : 'CREDIT' }})
+        <br>
         <b>Closed: </b>{{ account.closed }}
         <br>
         <b>Balance: </b>{% include "snippets/balance.html.peb" %}

@@ -1,5 +1,6 @@
 package sh.okx.bankoficenia.backend.database
 
+import sh.okx.bankoficenia.backend.model.AccountType
 import sh.okx.bankoficenia.backend.model.Transaction
 import sh.okx.bankoficenia.backend.model.TransactionType
 import java.util.*
@@ -26,7 +27,7 @@ data class SqlLedgerDao(val dataSource: DataSource) {
         }
     }
 
-    fun reconcile(): String {
+    fun reconcileTransactionType(): String {
         dataSource.connection.use {
             val resultSet = it.createStatement()
                 .executeQuery("SELECT SUM(CASE WHEN \"type\" = 'DEBIT' THEN amount ELSE -amount END) AS amount FROM ledger")
@@ -38,6 +39,33 @@ data class SqlLedgerDao(val dataSource: DataSource) {
             return resultSet.getString("amount") ?: "0.0000"
         }
     }
+    fun reconcileAccountType(): Pair<String, String> {
+        dataSource.connection.use {
+            val resultSet = it.createStatement()
+                .executeQuery("SELECT " +
+                        "account_type IN ('DIVIDEND', 'EXPENSE', 'ASSET') AS debit, " +
+                        "SUM(CASE WHEN (\"type\" != 'DEBIT') != (account_type IN ('DIVIDEND', 'EXPENSE', 'ASSET')) THEN amount ELSE -amount END) AS amount " +
+                        "FROM ledger " +
+                        "INNER JOIN accounts ON accounts.id = ledger.account " +
+                        "GROUP BY account_type IN ('DIVIDEND', 'EXPENSE', 'ASSET') " +
+                        "ORDER BY debit")
+
+            if (!resultSet.next()) {
+                return "0.0000" to "0.0000";
+            }
+
+            val amount = resultSet.getString("amount") ?: "0.0000"
+
+            if (!resultSet.next()) {
+                return amount to "0.000"
+            }
+
+            val amount2 = resultSet.getString("amount") ?: "0.0000"
+            return amount to amount2
+        }
+    }
+
+
 
     /**
      * Returned amounts are double and therefore imprecise and not suitable for numerical computation, only display.
@@ -69,7 +97,8 @@ data class SqlLedgerDao(val dataSource: DataSource) {
 
             val balancesArray = ArrayList<Double>(accounts.size)
             for (account in accounts) {
-                balancesArray.add(balances.getOrDefault(account, 0.0))
+                val am = balances.getOrDefault(account, 0.0)
+                balancesArray.add(if (am == 0.0) 0.0 else am)
             }
             return balancesArray
         }
@@ -78,10 +107,11 @@ data class SqlLedgerDao(val dataSource: DataSource) {
     fun getTransactions(account: Long): List<Transaction> {
         dataSource.connection.use {
             val stmt = it.prepareStatement(
-                "SELECT *, COALESCE(accounts.reference_name, CASE WHEN users.ign IS NOT NULL THEN accounts.code || ' (' || users.ign || ')' ELSE accounts.code END) AS referenced_account_code, " +
+                "SELECT ledger.id, account, type, message, amount, timestamp, a2.account_type as account_type, COALESCE(accounts.reference_name, CASE WHEN users.ign IS NOT NULL THEN accounts.code || ' (' || users.ign || ')' ELSE accounts.code END) AS referenced_account_code, " +
                         "SUM(CASE WHEN \"type\" = 'DEBIT' THEN amount ELSE -amount END) OVER (PARTITION BY \"account\" ORDER BY \"timestamp\", type DESC) AS running_total " +
                         "FROM ledger " +
                         "INNER JOIN accounts ON accounts.id = referenced_account " +
+                        "INNER JOIN accounts a2 ON a2.id = account " +
                         "LEFT JOIN users ON accounts.user_id = users.id " +
                         "WHERE \"account\" = ? ORDER BY \"timestamp\" DESC, type"
             )
@@ -90,6 +120,10 @@ data class SqlLedgerDao(val dataSource: DataSource) {
             val resultSet = stmt.executeQuery()
             val transactions = ArrayList<Transaction>()
             while (resultSet.next()) {
+                var runningTotal = resultSet.getDouble("running_total")
+                if (!AccountType.valueOf(resultSet.getString("account_type")).isNormalDebit() && runningTotal != 0.0) {
+                    runningTotal = -runningTotal
+                }
                 transactions.add(
                     Transaction(
                         resultSet.getLong("id"),
@@ -99,7 +133,7 @@ data class SqlLedgerDao(val dataSource: DataSource) {
                         resultSet.getString("message"),
                         resultSet.getDouble("amount"),
                         resultSet.getTimestamp("timestamp").toInstant(),
-                        resultSet.getDouble("running_total")
+                        runningTotal
                     )
                 )
             }
@@ -117,13 +151,13 @@ data class SqlLedgerDao(val dataSource: DataSource) {
 
                 if (!force) {
                     val stmt = it.prepareStatement(
-                        "SELECT SUM(CASE WHEN \"type\" = 'DEBIT' THEN amount ELSE -amount END) AS amount FROM ledger WHERE \"account\" = ?"
+                        "SELECT SUM(CASE WHEN \"type\" = 'DEBIT' THEN -amount ELSE amount END) AS amount FROM ledger WHERE \"account\" = ?"
                     )
                     stmt.setLong(1, accountFrom)
                     var balance = "0"
                     val resultSet = stmt.executeQuery()
                     if (resultSet.next()) {
-                        balance = resultSet.getString("amount")
+                        balance = resultSet.getString("amount") ?: "0"
                     }
 
                     val balStmt = it.prepareStatement(
@@ -144,16 +178,16 @@ data class SqlLedgerDao(val dataSource: DataSource) {
 
                 val credit =
                     it.prepareStatement("INSERT INTO ledger (account, referenced_account, \"type\", message, amount) VALUES (?, ?, 'CREDIT', ?, CAST(? AS NUMERIC(10, 4)))")
-                credit.setLong(1, accountFrom)
-                credit.setLong(2, accountTo)
+                credit.setLong(1, accountTo)
+                credit.setLong(2, accountFrom)
                 credit.setString(3, description)
                 credit.setString(4, amount)
                 credit.executeUpdate()
 
                 val debit =
                     it.prepareStatement("INSERT INTO ledger (account, referenced_account, \"type\", message, amount) VALUES (?, ?, 'DEBIT', ?, CAST(? AS NUMERIC(10, 4)))")
-                debit.setLong(1, accountTo)
-                debit.setLong(2, accountFrom)
+                debit.setLong(1, accountFrom)
+                debit.setLong(2, accountTo)
                 debit.setString(3, description)
                 debit.setString(4, amount)
                 debit.executeUpdate()

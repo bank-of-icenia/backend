@@ -3,12 +3,21 @@
 {% block body %}
 <main class="p-4">
     <h4>Reconcile</h4>
-        {% if reconcile == "0.0000" %}
+    <h5>Transactions</h5>
+        {% if transaction == "0.0000" %}
     <p>Sum = 0. Reconciliation success.</p>
     {% else %}
-    <div class="alert alert-warning">
-        Sum = {{ reconcile }}. Reconciliation failed!
+    <div class="alert alert-danger">
+        Sum = {{ transaction }}. Reconciliation failed!
     </div>
+    {% endif %}
+    <h5>Accounts</h5>
+    {% if account.first == account.second %}
+        <p>Credits = Debits = {{ account.first }}. Reconciliation success.</p>
+        {% else %}
+        <div class="alert alert-danger">
+            Credits = {{ account.first }}, debits = {{ account.second }}. Reconciliation failed!
+        </div>
     {% endif %}
 </main>
 <script>

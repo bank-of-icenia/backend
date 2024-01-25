@@ -66,7 +66,9 @@ fun Route.templatedRoutes(
             val map = call.attributes[KEY_MAP]
             val accounts = accountDao.getAccounts(user.id)
             map["accounts"] = accounts
-            map["balances"] = ledgerDao.getBalances(accounts.map { it.id }).map { String.format("%.4f", it) }
+            map["balances"] = ledgerDao.getBalances(accounts.map { it.id })
+                .mapIndexed { i, s -> if (accounts[i].accountType.isNormalDebit() || s == 0.0) s else -s}
+                .map { String.format("%.4f", it) }
             map["user"] = user
             call.respond(HttpStatusCode.OK, PebbleContent("pages/accounts.html.peb", map))
         }
@@ -185,7 +187,10 @@ fun Route.templatedRoutes(
                 return@post
             }
 
-            val balance = ledgerDao.getBalances(listOf(account.id))[0]
+            var balance = ledgerDao.getBalances(listOf(account.id))[0]
+            if (!account.accountType.isNormalDebit() && balance != 0.0) {
+                balance = -balance;
+            }
             // Not a safe comparison but this isn't the real one
             if (amountDec > BigDecimal.valueOf(balance)) {
                 map["error"] = "funds"
@@ -462,7 +467,8 @@ fun Route.templatedRoutes(
 
             val map = call.attributes[KEY_MAP]
             map["user"] = adminUser
-            map["reconcile"] = ledgerDao.reconcile()
+            map["transaction"] = ledgerDao.reconcileTransactionType()
+            map["account"] = ledgerDao.reconcileAccountType()
             call.respond(HttpStatusCode.OK, PebbleContent("pages/admin/reconcile.html.peb", map))
         }
         get("/admin/withdraw") {

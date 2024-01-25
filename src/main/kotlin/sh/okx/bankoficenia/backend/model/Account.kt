@@ -6,6 +6,7 @@ data class Account(
     val code: String?,
     val referenceName: String?,
     val name: String,
+    val accountType: AccountType,
     val closed: Boolean,
     val inDirectory: Boolean,
 )
