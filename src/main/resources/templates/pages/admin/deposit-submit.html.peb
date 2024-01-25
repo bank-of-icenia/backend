@@ -1,0 +1,14 @@
+{% extends "admin.html.peb" %}
+{% set selected = "deposit" %}
+{% block body %}
+<main class="p-4">
+    <h4>Deposit</h4>
+    <div class="border border-dark-subtle mb-4 p-2">
+        {% if error == 'funds' %}
+            <p>The account does not have enough funds for this transaction, or an internal error occurred.<p>
+        {% else %}
+            <p>Deposit complete. <a href="/admin/account/{{ from.id }}">View transaction in the account.</a>
+        {% endif %}
+    </div>
+</main>
+{% endblock %}

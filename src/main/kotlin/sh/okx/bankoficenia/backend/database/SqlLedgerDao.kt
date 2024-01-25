@@ -35,7 +35,7 @@ data class SqlLedgerDao(val dataSource: DataSource) {
                 return "0.0000";
             }
 
-            return resultSet.getString("amount")
+            return resultSet.getString("amount") ?: "0.0000"
         }
     }
 
@@ -107,7 +107,7 @@ data class SqlLedgerDao(val dataSource: DataSource) {
         }
     }
 
-    fun ledge(accountFrom: Long, accountTo: Long, amount: String, description: String): Boolean {
+    fun ledge(accountFrom: Long, accountTo: Long, amount: String, description: String, force: Boolean = false): Boolean {
         dataSource.connection.use {
             try {
                 it.autoCommit = false
@@ -115,29 +115,31 @@ data class SqlLedgerDao(val dataSource: DataSource) {
                 // Shit but easy
                 it.createStatement().execute("LOCK TABLE ledger")
 
-                val stmt = it.prepareStatement(
-                    "SELECT SUM(CASE WHEN \"type\" = 'DEBIT' THEN amount ELSE -amount END) AS amount FROM ledger WHERE \"account\" = ?"
-                )
-                stmt.setLong(1, accountFrom)
-                var balance = "0"
-                val resultSet = stmt.executeQuery()
-                if (resultSet.next()) {
-                    balance = resultSet.getString("amount")
-                }
+                if (!force) {
+                    val stmt = it.prepareStatement(
+                        "SELECT SUM(CASE WHEN \"type\" = 'DEBIT' THEN amount ELSE -amount END) AS amount FROM ledger WHERE \"account\" = ?"
+                    )
+                    stmt.setLong(1, accountFrom)
+                    var balance = "0"
+                    val resultSet = stmt.executeQuery()
+                    if (resultSet.next()) {
+                        balance = resultSet.getString("amount")
+                    }
 
-                val balStmt = it.prepareStatement(
-                    "SELECT CAST(? AS NUMERIC(10, 4)) >= CAST(? AS NUMERIC(10, 4)) AS has_balance"
-                )
-                balStmt.setString(1, balance)
-                balStmt.setString(2, amount)
+                    val balStmt = it.prepareStatement(
+                        "SELECT CAST(? AS NUMERIC(10, 4)) >= CAST(? AS NUMERIC(10, 4)) AS has_balance"
+                    )
+                    balStmt.setString(1, balance)
+                    balStmt.setString(2, amount)
 
-                val balResultSet = balStmt.executeQuery()
-                if (!balResultSet.next()) {
-                    return false
-                }
-                val hasBalance = balResultSet.getBoolean("has_balance")
-                if (!hasBalance) {
-                    return false
+                    val balResultSet = balStmt.executeQuery()
+                    if (!balResultSet.next()) {
+                        return false
+                    }
+                    val hasBalance = balResultSet.getBoolean("has_balance")
+                    if (!hasBalance) {
+                        return false
+                    }
                 }
 
                 val credit =

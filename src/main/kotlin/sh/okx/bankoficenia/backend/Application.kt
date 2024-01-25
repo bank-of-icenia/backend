@@ -10,7 +10,6 @@ import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.config.*
 import io.ktor.server.engine.*
-import io.ktor.server.http.content.*
 import io.ktor.server.netty.*
 import io.ktor.server.pebble.*
 import io.ktor.server.sessions.*
@@ -27,7 +26,11 @@ fun main() {
     val config = HoconApplicationConfig(ConfigFactory.parseFile(File("backend.conf")))
     val dataSource = getDataSource(config)
     Database.connect(dataSource)
-    embeddedServer(Netty, port = 8080, host = "127.0.0.1", module = { module(config = config, dataSource = dataSource) })
+    embeddedServer(
+        Netty,
+        port = config.property("port").getString().toInt(),
+        host = "127.0.0.1",
+        module = { module(config = config, dataSource = dataSource) })
         .start(wait = true)
 }
 
@@ -39,7 +42,11 @@ val applicationHttpClient = HttpClient(CIO) {
     }
 }
 
-fun Application.module(httpClient: HttpClient = applicationHttpClient, config: HoconApplicationConfig, dataSource: DataSource) {
+fun Application.module(
+    httpClient: HttpClient = applicationHttpClient,
+    config: HoconApplicationConfig,
+    dataSource: DataSource
+) {
     install(Pebble) {
         loader(ClasspathLoader().apply {
             prefix = "templates"
@@ -95,5 +102,13 @@ fun Application.module(httpClient: HttpClient = applicationHttpClient, config: H
             }
         }
     }
-    configureRouting(httpClient, sessionDao, SqlUserDao(dataSource), SqlAccountDao(dataSource), SqlLedgerDao(dataSource), config.property("discord.webhook").getString())
+    configureRouting(
+        httpClient,
+        sessionDao,
+        SqlUserDao(dataSource),
+        SqlAccountDao(dataSource),
+        SqlLedgerDao(dataSource),
+        config.property("discord.webhook").getString(),
+        config.property("admin").getString().toLong()
+    )
 }

@@ -1,0 +1,33 @@
+{% extends "admin.html.peb" %}
+{% set selected = "deposit" %}
+{% block body %}
+<main class="p-4">
+    <h4>Deposit from admin account</h4>
+    <div class="border border-dark-subtle mb-4 p-2">
+        <form action="/admin/deposit/submit" method="post">
+            <input type="hidden" name="csrf" value="{{ csrf }}">
+            <label for="account" class="fw-bold my-2">Account to deposit to:</label>
+            <br>
+            <input id="account" type="text" placeholder="00-00-00" pattern="\d\d-\d\d-\d\d" required class="my-2 mb-4" name="account">
+            <br>
+            <label for="amount" class="fw-bold my-2">Amount:</label>
+            <br>
+            <input id="amount" type="number" step="0.0001" min="0" class="my-2 mb-4" name="amount"> diamonds
+            <br>
+            <label for="reason" class="fw-bold my-2">Reason:</label>
+            <br>
+            <select id="reason" class="my-2 mb-4" name="reason">
+                <option value="teller" selected>Deposit through a teller</option>
+                <option value="other">Other</option>
+            </select>
+            <br>
+            <label for="description" class="fw-bold my-2">Description (if reason is 'Other'):</label>
+            <br>
+            <textarea id="description" style="resize: both" class="my-2 mb-4" name="description"></textarea>
+            <br>
+            <br>
+            <input type="submit" value="Submit">
+        </form>
+    </div>
+</main>
+{% endblock %}

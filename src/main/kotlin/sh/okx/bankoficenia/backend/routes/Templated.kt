@@ -30,7 +30,8 @@ fun Route.templatedRoutes(
     accountDao: SqlAccountDao,
     ledgerDao: SqlLedgerDao,
     client: HttpClient,
-    webhook: String
+    webhook: String,
+    admin: Long
 ) {
     install(CsrfPlugin)
     authenticate("session-cookie", optional = true) {
@@ -349,14 +350,12 @@ fun Route.templatedRoutes(
         install(AdminPlugin) { pluginUserDao = userDao }
         get("/admin") {
             val user = call.attributes[KEY_ADMIN_USER]
-
             val map = call.attributes[KEY_MAP]
             map["user"] = user
             call.respond(HttpStatusCode.OK, PebbleContent("pages/admin/index.html.peb", map))
         }
         get("/admin/createaccount") {
             val user = call.attributes[KEY_ADMIN_USER]
-
             val map = call.attributes[KEY_MAP]
             map["user"] = user
             call.respond(HttpStatusCode.OK, PebbleContent("pages/admin/createaccount.html.peb", map))
@@ -463,6 +462,120 @@ fun Route.templatedRoutes(
             map["user"] = adminUser
             map["reconcile"] = ledgerDao.reconcile()
             call.respond(HttpStatusCode.OK, PebbleContent("pages/admin/reconcile.html.peb", map))
+        }
+        get("/admin/withdraw") {
+            val adminUser = call.attributes[KEY_ADMIN_USER]
+            val map = call.attributes[KEY_MAP]
+            map["user"] = adminUser
+            call.respond(HttpStatusCode.OK, PebbleContent("pages/admin/withdraw.html.peb", map))
+        }
+        get("/admin/deposit") {
+            val adminUser = call.attributes[KEY_ADMIN_USER]
+            val map = call.attributes[KEY_MAP]
+            map["user"] = adminUser
+            call.respond(HttpStatusCode.OK, PebbleContent("pages/admin/deposit.html.peb", map))
+        }
+        post("/admin/withdraw/submit") {
+            val parameters = call.receiveParameters()
+            if (!validateCsrf(call, parameters["csrf"])) return@post
+            val accountCode = parameters["account"]
+            val reason = parameters["reason"]
+            val amountStr = parameters["amount"]
+            val description = parameters["description"]
+
+            val amountDec = amountStr?.toBigDecimalOrNull()
+
+            val map = call.attributes[KEY_MAP]
+            map["user"] = call.attributes[KEY_ADMIN_USER]
+
+            if (amountStr == null || !amountRegex.matcher(amountStr).matches()
+                || reason == null || reason !in listOf("teller", "other")
+                || description == null || !descriptionRegex.matcher(description).matches()
+                || accountCode == null || !codeRegex.matcher(accountCode).matches()
+                || amountDec == null || amountDec == BigDecimal.ZERO
+            ) {
+                call.respond(HttpStatusCode.BadRequest)
+                return@post
+            }
+
+            val account = accountDao.readByCode(accountCode)
+            if (account == null || account.closed) {
+                call.respond(HttpStatusCode.BadRequest)
+                return@post
+            }
+
+            val adminAccount = accountDao.read(admin)
+            if (adminAccount == null) {
+                call.respond(HttpStatusCode.BadRequest)
+                return@post
+            }
+
+            val method = when (reason) {
+                "teller" -> "Withdrawal through a teller"
+                "other" -> description
+                else -> throw IllegalArgumentException()
+            }
+
+            if (!ledgerDao.ledge(account.id, adminAccount.id, amountStr, method)) {
+                map["error"] = "funds"
+                call.respond(HttpStatusCode.Conflict, PebbleContent("pages/admin/withdraw-submit.html.peb", map))
+                return@post
+            }
+
+            map["from"] = account
+            call.respond(HttpStatusCode.OK, PebbleContent("pages/admin/withdraw-submit.html.peb", map))
+
+        }
+        post("/admin/deposit/submit") {
+            val parameters = call.receiveParameters()
+            if (!validateCsrf(call, parameters["csrf"])) return@post
+            val accountCode = parameters["account"]
+            val reason = parameters["reason"]
+            val amountStr = parameters["amount"]
+            val description = parameters["description"]
+
+            val amountDec = amountStr?.toBigDecimalOrNull()
+
+            val map = call.attributes[KEY_MAP]
+            map["user"] = call.attributes[KEY_ADMIN_USER]
+
+            if (amountStr == null || !amountRegex.matcher(amountStr).matches()
+                || reason == null || reason !in listOf("teller", "other")
+                || description == null || !descriptionRegex.matcher(description).matches()
+                || accountCode == null || !codeRegex.matcher(accountCode).matches()
+                || amountDec == null || amountDec == BigDecimal.ZERO
+            ) {
+                call.respond(HttpStatusCode.BadRequest)
+                return@post
+            }
+
+            val account = accountDao.readByCode(accountCode)
+            if (account == null || account.closed) {
+                call.respond(HttpStatusCode.BadRequest)
+                return@post
+            }
+
+            val adminAccount = accountDao.read(admin)
+            if (adminAccount == null) {
+                call.respond(HttpStatusCode.BadRequest)
+                return@post
+            }
+
+            val method = when (reason) {
+                "teller" -> "Deposit through a teller"
+                "other" -> description
+                else -> throw IllegalArgumentException()
+            }
+
+            if (!ledgerDao.ledge(adminAccount.id, account.id, amountStr, method, true)) {
+                map["error"] = "funds"
+                call.respond(HttpStatusCode.Conflict, PebbleContent("pages/admin/deposit-submit.html.peb", map))
+                return@post
+            }
+
+            map["from"] = account
+            call.respond(HttpStatusCode.OK, PebbleContent("pages/admin/deposit-submit.html.peb", map))
+
         }
     }
     authenticate("session-cookie") {
