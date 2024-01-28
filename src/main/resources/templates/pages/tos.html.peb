@@ -1,0 +1,98 @@
+{% extends "parent.html.peb" %}
+{% block body %}
+<main class="p-4">
+    <em>Last updated 2024-01-28</em>
+    <h1>Terms of Service</h1>
+    <h2>Section 1. Preface</h2>
+    <ol>
+        <li>
+            These Terms of Service shall serve as a contract between You (the ‘Client’) and the Bank of Icenia (the ‘Bank’)
+            pursuant to the Icenian Contract Law Act. You agree, by establishing an account with the Bank, to these Terms of
+            Service, and to be bound by them until such time as You withdraw all assets and terminate Your Account.
+        </li>
+        <li>
+            The Bank reserves the right to amend these Terms of Service, with a week’s notice before going into effect,
+            after which You are presumed to have agreed, unless You have begun the process of closing Your account.
+        </li>
+    </ol>
+    <h2>Section 2. Opening an Account</h2>
+    <ol>
+        <li>You may open an account by creating a ticket on the Discord server.</li>
+        <li>The Bank reserves the right to refuse to open any account.</li>
+    </ol>
+
+    <h2>Section 3. Holding Account</h2>
+    <ol>
+        <li>A Holding Account shall have its interest accrued daily. Such daily accrual will be rounded to 4 decimal
+            places
+            using half-even rounding.
+        </li>
+        <li>The interest will be paid on the 1st of every month.</li>
+        <li>The current gross rates of interest per 30 days in a Holding Account are:
+            <ol>
+                <li>Between 0d and 200d - 1.49%</li>
+                <li>Between 200.0001d and 1000d - 0.25%</li>
+                <li>Over 1000.0001d - 0.01%</li>
+            </ol>
+        </li>
+        <li>Each individual may only have one Holding Account open at a time.</li>
+        <li>The Bank reserves the right to close Your Holding account for any reason with a week’s notice.</li>
+        <li>You may transfer diamonds from a Holding Account to another Holding Account.</li>
+        <li>You may deposit diamonds to Your Holding Account through a teller. You will not be charged a fee for
+            depositing
+            diamonds.
+        </li>
+        <li>You may withdraw diamonds from Your Holding Account through a teller. You will not be charged a fee for
+            withdrawing diamonds.
+        </li>
+        <li>You require a Holding Account to get a loan from the Bank, the terms of which shall be agreed upon
+            separately.
+        </li>
+    </ol>
+
+    <p><em>Example</em>
+    <br>Alice deposits 195d in a Holding account on the 31st of January. On the 1st of February, 0.0968d interest will
+    be accrued (195 * 1.49% * (1/30)). On the 2nd of February, 0.0969d will be accrued (195.0968 * 1.49% * (1/30)).
+    This will continue until the 1st of March, where all the accrued interest up to and including the day preceding
+        the 1st of March will be credited to the account.
+    </p>
+
+
+    <h2>Section 4. Closing an Account</h2>
+    <ol>
+        <li>You may request Your Account to be closed.</li>
+        <li>To close Your account, Bank shall arrange the repayment of any debts and charges, and any accrued interest, and
+            the
+            withdrawal of any remaining assets, subject to any associated withdrawal fees.
+        </li>
+        <li>The Bank will make a best effort to return Your assets in physical form.</li>
+        <li>If any assets, such as fractions of a diamond, cannot be manifested in physical form, they shall be forfeited to
+            the Bank.
+        </li>
+        <li>You and the Bank may agree on a different method to return Your assets, where paragraph 4 shall not apply.</li>
+    </ol>
+
+    <h2>Section 5. Asset Storage</h2>
+    <ol>
+        <li>The Bank commits to holding at least 40% of its diamonds from client deposits as diamonds or diamond
+            equivalents.
+        </li>
+        <li>The Bank controls at least a 2916 barrel vault it may use to store diamonds.</li>
+        <li>The Bank may store diamonds through other means it deems suitable.</li>
+        <li>The Bank may halt withdrawals at any time if it feels that it will be unable to meet withdrawals. If
+            withdrawals
+            are halted for an extended period of time, the Bank will enter Bankruptcy.
+        </li>
+    </ol>
+    <h2>Section 6. Bankruptcy</h2>
+    <ol>
+        <li>If the Bank enters Bankruptcy, then all assets will be liquidated as diamonds, and an amount up to their
+            deposit
+            will be returned to depositors, based on their share of the Bank’s liabilities to depositors.
+        </li>
+        <li>The Bank will then use remaining diamonds from paragraph 1 to pay back any other liabilities it has.
+        </li>
+        <li>Any remaining diamonds will then be returned to the Directors.</li>
+    </ol>
+</main>
+{% endblock %}

@@ -14,6 +14,7 @@ repositories {
 dependencies {
     implementation("io.ktor:ktor-server-core-jvm:$ktor_version")
     implementation("io.ktor:ktor-server-pebble-jvm:$ktor_version")
+    implementation("io.ktor:ktor-server-compression:$ktor_version")
     implementation 'io.ktor:ktor-server-default-headers-jvm:2.3.7'
     testImplementation("org.jetbrains.kotlin:kotlin-test")
     implementation("io.ktor:ktor-server-core:$ktor_version")

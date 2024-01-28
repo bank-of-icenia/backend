@@ -54,6 +54,14 @@ fun Route.templatedRoutes(
             map["directory"] = accountDao.getDirectoryAccounts()
             call.respond(HttpStatusCode.OK, PebbleContent("pages/account/directory.html.peb", map))
         }
+        get("/tos") {
+            val user = call.principal<UserSession>()?.let { userDao.read(it.userId) }
+            val map = call.attributes[KEY_MAP]
+            if (user != null) {
+                map["user"] = user
+            }
+            call.respond(HttpStatusCode.OK, PebbleContent("pages/tos.html.peb", map))
+        }
     }
     authenticate("session-cookie") {
         get("/accounts") {

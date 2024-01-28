@@ -12,6 +12,7 @@ import io.ktor.server.config.*
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*
 import io.ktor.server.pebble.*
+import io.ktor.server.plugins.compression.*
 import io.ktor.server.sessions.*
 import io.pebbletemplates.pebble.loader.ClasspathLoader
 import kotlinx.serialization.json.Json
@@ -47,6 +48,14 @@ fun Application.module(
     config: HoconApplicationConfig,
     dataSource: DataSource
 ) {
+    install(Compression) {
+        gzip {
+            // Don't compress any sensitive data like the CSRF token because of the BREACH attack
+            // But compressing CSS and JS is OK
+            excludeContentType(ContentType.Text.Html)
+        }
+    }
+
     install(Pebble) {
         loader(ClasspathLoader().apply {
             prefix = "templates"

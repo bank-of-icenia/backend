@@ -16,6 +16,7 @@
         </ul>
         For instance, if you deposited 200d with us, you would earn 3d* after 30 days. If you deposited 1000d, you would earn 5d* after 30 days.
     </p>
-    <p><em>*All calculated figures except gross interest are rounded down to 2 decimal places. Therefore, you will receive slightly more interest than specified here.</em></p>
+    <p><em>*All calculated figures except gross interest are rounded down to 2 decimal places. Therefore, you may receive slightly more interest than specified here.</em></p>
+    <p><a href="/tos">Terms of Service</a></p>
 </main>
 {% endblock %}
