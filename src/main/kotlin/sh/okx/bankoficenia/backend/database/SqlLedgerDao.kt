@@ -109,12 +109,12 @@ data class SqlLedgerDao(val dataSource: DataSource) {
         dataSource.connection.use {
             val stmt = it.prepareStatement(
                 "SELECT ledger.id, account, type, message, amount, timestamp, a2.account_type as account_type, COALESCE(accounts.reference_name, CASE WHEN users.ign IS NOT NULL THEN accounts.code || ' (' || users.ign || ')' ELSE accounts.code END) AS referenced_account_code, " +
-                        "SUM(CASE WHEN \"type\" = 'DEBIT' THEN amount ELSE -amount END) OVER (PARTITION BY \"account\" ORDER BY \"timestamp\", type DESC) AS running_total " +
+                        "SUM(CASE WHEN \"type\" = 'DEBIT' THEN amount ELSE -amount END) OVER (PARTITION BY \"account\" ORDER BY \"timestamp\", type DESC, ledger.id) AS running_total " +
                         "FROM ledger " +
                         "INNER JOIN accounts ON accounts.id = referenced_account " +
                         "INNER JOIN accounts a2 ON a2.id = account " +
                         "LEFT JOIN users ON accounts.user_id = users.id " +
-                        "WHERE \"account\" = ? ORDER BY \"timestamp\" DESC, type"
+                        "WHERE \"account\" = ? ORDER BY \"timestamp\" DESC, type, ledger.id DESC"
             )
             stmt.setLong(1, account)
 
