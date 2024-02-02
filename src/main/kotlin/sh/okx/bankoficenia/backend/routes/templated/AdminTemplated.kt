@@ -174,7 +174,7 @@ fun Route.templatedAdminRoutes(
                 }
 
                 val account = accountDao.readByCode(accountCode)
-                if (account == null || account.closed) {
+                if (account == null) {
                     call.respond(HttpStatusCode.BadRequest)
                     return@post
                 }
@@ -219,7 +219,7 @@ fun Route.templatedAdminRoutes(
                 }
 
                 val account = accountDao.readByCode(accountCode)
-                if (account == null || account.closed) {
+                if (account == null) {
                     call.respond(HttpStatusCode.BadRequest)
                     return@post
                 }
@@ -238,6 +238,53 @@ fun Route.templatedAdminRoutes(
 
                 map["from"] = account
                 call.respond(HttpStatusCode.OK, PebbleContent("pages/admin/deposit-submit.html.peb", map))
+
+            }
+            get("/transfer") {
+                val adminUser = call.attributes[KEY_ADMIN_USER]
+                val map = call.attributes[KEY_MAP]
+                map["user"] = adminUser
+                call.respond(HttpStatusCode.OK, PebbleContent("pages/admin/transfer.html.peb", map))
+            }
+            post("/transfer/submit") {
+                val parameters = call.receiveParameters()
+                if (!validateCsrf(call, parameters["csrf"])) return@post
+                val fromId = parameters["from"]?.toLongOrNull()
+                val toId = parameters["to"]?.toLongOrNull()
+                val amountStr = parameters["amount"]
+                val description = parameters["description"]
+
+                val amountDec = amountStr?.toBigDecimalOrNull()
+
+                val map = call.attributes[KEY_MAP]
+                map["user"] = call.attributes[KEY_ADMIN_USER]
+
+                if (amountStr == null || !amountRegex.matcher(amountStr).matches()
+                    || description == null || !descriptionRegex.matcher(description).matches()
+                    || fromId == null
+                    || toId == null
+                    || amountDec == null || amountDec == BigDecimal.ZERO
+                ) {
+                    call.respond(HttpStatusCode.BadRequest)
+                    return@post
+                }
+
+                val toAccount = accountDao.read(toId)
+                val fromAccount = accountDao.read(fromId)
+                if (toAccount == null || fromAccount == null) {
+                    call.respond(HttpStatusCode.BadRequest)
+                    return@post
+                }
+
+                if (!ledgerDao.ledge(fromId, toId, amountStr, description, true)) {
+                    map["error"] = "funds"
+                    call.respond(HttpStatusCode.Conflict, PebbleContent("pages/admin/transfer-submit.html.peb", map))
+                    return@post
+                }
+
+                map["from"] = fromAccount
+                map["to"] = toAccount
+                call.respond(HttpStatusCode.OK, PebbleContent("pages/admin/transfer-submit.html.peb", map))
 
             }
         }

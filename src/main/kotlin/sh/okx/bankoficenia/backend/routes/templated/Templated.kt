@@ -304,7 +304,7 @@ fun Route.templatedRoutes(
 
             var balance = ledgerDao.getBalances(listOf(account.id))[0]
             if (!account.accountType.isNormalDebit() && balance != 0.0) {
-                balance = -balance;
+                balance = -balance
             }
             // Not a safe comparison but this isn't the real one
             if (amountDec > BigDecimal.valueOf(balance)) {

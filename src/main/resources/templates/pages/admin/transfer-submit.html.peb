@@ -1,0 +1,19 @@
+{% extends "admin.html.peb" %}
+{% set selected = "withdraw" %}
+{% block body %}
+<main class="p-4">
+    <h4>Transfer</h4>
+    <div class="border border-dark-subtle mb-4 p-2">
+        {% if error == 'funds' %}
+            <p>The account does not have enough funds for this transaction, or an internal error occurred.<p>
+        {% else %}
+            <p>Transfer complete.
+            <br>
+            <a href="/admin/account/{{ to.id }}">View to account</a>
+            <br>
+            <a href="/admin/account/{{ from.id }}">View from account</a>
+            </p>
+        {% endif %}
+    </div>
+</main>
+{% endblock %}

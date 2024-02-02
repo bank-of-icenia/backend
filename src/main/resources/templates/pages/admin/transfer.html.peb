@@ -1,0 +1,30 @@
+{% extends "admin.html.peb" %}
+{% set selected = "transfer" %}
+{% block body %}
+<main class="p-4">
+    <h4>Transfer</h4>
+    <div class="border border-dark-subtle mb-4 p-2">
+        <form action="/admin/transfer/submit" method="post">
+            <input type="hidden" name="csrf" value="{{ csrf }}">
+            <label for="account" class="fw-bold my-2">Account to DEBIT:</label>
+            <br>
+            <input id="account" type="text" pattern="\d+" required class="my-2 mb-4" name="from">
+            <br>
+            <label for="account" class="fw-bold my-2">Account to CREDIT:</label>
+            <br>
+            <input id="account" type="text" pattern="\d+" required class="my-2 mb-4" name="to">
+            <br>
+            <label for="amount" class="fw-bold my-2">Amount:</label>
+            <br>
+            <input id="amount" type="number" step="0.0001" min="0" class="my-2 mb-4" name="amount"> diamonds
+            <br>
+            <label for="description" class="fw-bold my-2">Description:</label>
+            <br>
+            <textarea id="description" style="resize: both" class="my-2 mb-4" name="description"></textarea>
+            <br>
+            <br>
+            <input type="submit" value="Submit">
+        </form>
+    </div>
+</main>
+{% endblock %}
