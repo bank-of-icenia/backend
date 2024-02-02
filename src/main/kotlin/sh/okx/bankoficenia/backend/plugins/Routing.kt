@@ -6,18 +6,21 @@ import io.ktor.server.http.content.*
 import io.ktor.server.plugins.defaultheaders.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
-import sh.okx.bankoficenia.backend.database.SqlAccountDao
-import sh.okx.bankoficenia.backend.database.SqlLedgerDao
-import sh.okx.bankoficenia.backend.database.SqlSessionDao
-import sh.okx.bankoficenia.backend.database.SqlUserDao
+import sh.okx.bankoficenia.backend.database.*
+import sh.okx.bankoficenia.backend.plugin.CsrfPlugin
 import sh.okx.bankoficenia.backend.routes.discordLoginRoute
 import sh.okx.bankoficenia.backend.routes.htmxRoutes
 import sh.okx.bankoficenia.backend.routes.templatedRoutes
+import sh.okx.bankoficenia.backend.routes.templated.templatedAdminRoutes
+import sh.okx.bankoficenia.backend.routes.templated.templatedRoutes
 
-fun Application.configureRouting(httpClient: HttpClient, sessionDao: SqlSessionDao, userDao: SqlUserDao, accountDao: SqlAccountDao, ledgerDao: SqlLedgerDao, webhook: String, admin: Long) {
+fun Application.configureRouting(httpClient: HttpClient, sessionDao: SqlSessionDao, userDao: SqlUserDao, accountDao: SqlAccountDao, ledgerDao: SqlLedgerDao, unbankedDao: SqlUnbankedDao, webhook: String) {
     routing {
+        install(CsrfPlugin)
+
         discordLoginRoute(httpClient, sessionDao, userDao)
-        templatedRoutes(userDao, accountDao, ledgerDao, httpClient, webhook, admin)
+        templatedRoutes(userDao, accountDao, ledgerDao, unbankedDao, httpClient, webhook)
+        templatedAdminRoutes(userDao, accountDao, ledgerDao)
         resources()
         htmxRoutes(userDao, accountDao, ledgerDao)
     }

@@ -78,8 +78,6 @@ fun Application.module(
             cookie.httpOnly = true
             // cookie.secure doesn't work on localhost (because of silly ktor checks), but this does
             cookie.extensions["Secure"] = null
-            // TODO cookie secure
-            // TODO cookie domain
 //            cookie.maxAgeInSeconds = // 7 days default
         }
     }
@@ -117,7 +115,7 @@ fun Application.module(
         SqlUserDao(dataSource),
         SqlAccountDao(dataSource),
         SqlLedgerDao(dataSource),
+        SqlUnbankedDao(dataSource),
         config.property("discord.webhook").getString(),
-        config.property("admin").getString().toLong()
     )
 }

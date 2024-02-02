@@ -5,10 +5,16 @@ import sh.okx.bankoficenia.backend.model.AccountAndUser
 import sh.okx.bankoficenia.backend.model.AccountType
 import sh.okx.bankoficenia.backend.model.DirectoryAccount
 import java.security.SecureRandom
+import java.sql.Connection
+import java.sql.ResultSet
 import javax.sql.DataSource
 
 data class SqlAccountDao(val dataSource: DataSource) {
     private var random = SecureRandom()
+    var assetAccount: Long
+    var interestAccount: Long
+    var unbankedLiabilitiesAccount: Long
+    var equityAccount: Long
 
     init {
         dataSource.connection.use {
@@ -32,9 +38,40 @@ data class SqlAccountDao(val dataSource: DataSource) {
                             "PRIMARY KEY (\"id\"), " +
                             "CHECK (reference_name IS NOT NULL OR (user_id IS NOT NULL AND code IS NOT NULL)))"
                 );
-            it.createStatement()
-                .execute("INSERT INTO accounts (\"id\", reference_name, name, account_type) VALUES (1, 'Bank of Icenia', 'Admin Account', 'ASSET') ON CONFLICT DO NOTHING")
+
+            assetAccount = createIfNotExists(it,
+                "SELECT id FROM accounts WHERE name = 'Admin Account'",
+                "INSERT INTO accounts (reference_name, name, account_type) VALUES ('Bank of Icenia', 'Admin Account', 'ASSET') ON CONFLICT DO NOTHING RETURNING id")
+
+            interestAccount = createIfNotExists(it,
+                "SELECT id FROM accounts WHERE name = 'Admin (Interest) Account'",
+                "INSERT INTO accounts (reference_name, name, account_type) VALUES ('Bank of Icenia', 'Admin (Interest) Account', 'EXPENSE') ON CONFLICT DO NOTHING RETURNING id")
+
+            unbankedLiabilitiesAccount = createIfNotExists(it,
+                "SELECT id FROM accounts WHERE name = 'Admin (Unbanked liabilities) Account'",
+                "INSERT INTO accounts (reference_name, name, account_type) VALUES ('Bank of Icenia', 'Admin (Unbanked liabilities) Account', 'LIABILITY') ON CONFLICT DO NOTHING RETURNING id")
+
+            equityAccount = createIfNotExists(it,
+                "SELECT id FROM accounts WHERE name = 'Admin (Owner''s Equity) Account'",
+                "INSERT INTO accounts (reference_name, name, account_type) VALUES ('Bank of Icenia', 'Admin (Owner''s Equity) Account', 'EQUITY') ON CONFLICT DO NOTHING RETURNING id")
         }
+    }
+
+    private fun createIfNotExists(connection: Connection, select: String, create: String): Long {
+        var query: ResultSet
+        while (true) {
+            query = connection.createStatement().executeQuery(select)
+            if (query.next()) {
+                break
+            }
+
+            query = connection.createStatement().executeQuery(create)
+            if (query.next()) {
+                break
+            }
+            // If the account could not be created because of a conflict, loop, because we should be able to select it next time.
+        }
+        return query.getLong("id")
     }
 
     fun createAccount(userId: Long, name: String): Long? {

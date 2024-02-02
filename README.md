@@ -6,8 +6,6 @@ Create a file called `backend.conf` that looks like this:
 ```hocon
 # The site's port
 port = 8080
-# The account id representing the bank itself
-admin = 1
 
 database {
     host = "127.0.0.1"

@@ -1,0 +1,42 @@
+{% extends "parent.html.peb" %}
+{% set selected = "transfer" %}
+{% block body %}
+<main class="p-4">
+    <h4>Transfer</h4>
+    <ol>
+        <li>Enter transaction details</li>
+        <li class="fw-bold">Confirm transaction details</li>
+        <li>Summary</li>
+    </ol>
+    <div class="border border-dark-subtle mb-4 p-2">
+        <h5>Transfer to unbanked individual</h5>
+        {% if error == 'funds' %}
+            <p>Your account does not have enough funds for this transaction.<p>
+        {% elseif error == 'ign_exists' %}
+            <p>That IGN is already registered with the bank.<p>
+        {% elseif error == 'generic' %}
+            <p>The input that you have provided is not valid.<p>
+        {% else %}
+            <p>Please note that the player that you are sending funds to will need to create an account with the Bank of Icenia before they can withdraw any proceeds from this transfer.
+            <form action="/unbanked-transfer/submit" method="post">
+                <input type="hidden" name="csrf" value="{{ csrf }}">
+                <p>
+                    <span class="text-body-secondary">Account to transfer from: </span> {{ from }}
+                    <br>
+                    <span class="text-body-secondary">IGN to transfer to: </span> {{ to }}
+                    <br>
+                    <span class="text-body-secondary">Amount: </span> {{ amount }}d
+                    <br>
+                    <span class="text-body-secondary">Description: </span> {{ description }}
+                </p>
+                <input type="hidden" name="from" value="{{ from }}">
+                <input type="hidden" name="to" value="{{ to }}">
+                <input type="hidden" name="amount" value="{{ amount }}">
+                <textarea style="display: none" name="description">{{ description }}</textarea>
+                <input type="submit" value="Submit">
+            </form>
+        {% endif %}
+        <p><a href="javascript:void(0)" onclick="history.back()">Go back</a></p>
+    </div>
+</main>
+{% endblock %}

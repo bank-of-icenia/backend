@@ -1,7 +1,7 @@
 {% extends "parent.html.peb" %}
 {% block body %}
 <main class="p-4">
-    <em>Last updated 2024-01-28</em>
+    <em>Last updated 2024-02-02</em>
     <h1>Terms of Service</h1>
     <h2>Section 1. Preface</h2>
     <ol>
@@ -14,6 +14,7 @@
             The Bank reserves the right to amend these Terms of Service, with a week’s notice before going into effect,
             after which You are presumed to have agreed, unless You have begun the process of closing Your account.
         </li>
+        <li>Under Title 3, Article 6 of the Icenian Contract Law Act, you may only cancel this contract by terminating your account.</li>
     </ol>
     <h2>Section 2. Opening an Account</h2>
     <ol>
@@ -24,8 +25,7 @@
     <h2>Section 3. Holding Account</h2>
     <ol>
         <li>A Holding Account shall have its interest accrued daily. Such daily accrual will be rounded to 4 decimal
-            places
-            using half-even rounding.
+            places using half-even rounding.
         </li>
         <li>The interest will be paid on the 1st of every month.</li>
         <li>The current gross rates of interest per 30 days in a Holding Account are:
@@ -38,9 +38,14 @@
         <li>Each individual may only have one Holding Account open at a time.</li>
         <li>The Bank reserves the right to close Your Holding account for any reason with a week’s notice.</li>
         <li>You may transfer diamonds from a Holding Account to another Holding Account.</li>
+        <li><ol>
+            <li>You may transfer diamonds from a Holding Account to a player without an account by just using their in-game name.</li>
+            <li>The diamonds will be credited to that player's account when they open an account with the Bank.</li>
+            <li>After 3 months, if still unclaimed, the Bank will make a reasonable effort to give the diamonds to the player,
+                failing which the diamonds will be forfeited to the bank.</li>
+        </ol></li>
         <li>You may deposit diamonds to Your Holding Account through a teller. You will not be charged a fee for
-            depositing
-            diamonds.
+            depositing diamonds.
         </li>
         <li>You may withdraw diamonds from Your Holding Account through a teller. You will not be charged a fee for
             withdrawing diamonds.
@@ -48,6 +53,12 @@
         <li>You require a Holding Account to get a loan from the Bank, the terms of which shall be agreed upon
             separately.
         </li>
+        <li>If You are banned from the CivMC Minecraft server, You must notify the Bank within a week of You being banned.</li>
+        <li>Existing clients that are banned must notify the Bank within one week of these Terms of Service coming into effect.</li>
+        <li>If the Bank is not notified that You are banned, You will forfeit all assets held with the Bank, and your accounts will be closed.</li>
+        <li>The Bank reserves the right to withhold interest from accounts owned by banned players.</li>
+        <li>If Your ban is accidental and You have good reason to believe that You will be unbanned shortly,
+            or Your ban lasts less than a week, then You do not need to notify the Bank, and paragraph 13 and 14 will not apply.</li>
     </ol>
 
     <p><em>Example</em>

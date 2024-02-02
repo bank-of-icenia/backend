@@ -66,6 +66,15 @@ data class SqlUserDao(val dataSource: DataSource) {
         }
     }
 
+    fun hasIgn(ign: String): Boolean {
+        dataSource.connection.use {
+            val stmt = it.prepareStatement("SELECT 1 FROM users WHERE ign = ?")
+            stmt.setString(1, ign)
+            val resultSet = stmt.executeQuery()
+            return resultSet.next()
+        }
+    }
+
     fun updateIgn(id: Long, ign: String): User? {
         dataSource.connection.use {
             val stmt = it.prepareStatement("UPDATE users SET ign = ? WHERE \"id\" = ? RETURNING *")

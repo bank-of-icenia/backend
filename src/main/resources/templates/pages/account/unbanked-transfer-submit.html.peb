@@ -1,0 +1,20 @@
+{% extends "parent.html.peb" %}
+{% set selected = "transfer" %}
+{% block body %}
+<main class="p-4">
+    <h4>Transfer</h4>
+    <ol>
+        <li>Enter transaction details</li>
+        <li>Confirm transaction details</li>
+        <li class="fw-bold">Summary</li>
+    </ol>
+    <div class="border border-dark-subtle mb-4 p-2">
+        <h5>Transfer to unbanked individual</h5>
+        {% if error == 'funds' %}
+            <p>Your account does not have enough funds for this transaction, or an internal error occurred.<p>
+        {% else %}
+            <p>Transfer complete. <a href="/account/{{ from.code }}">View transaction in your account.</a>
+        {% endif %}
+    </div>
+</main>
+{% endblock %}

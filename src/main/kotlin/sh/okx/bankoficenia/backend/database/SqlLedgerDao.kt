@@ -3,6 +3,7 @@ package sh.okx.bankoficenia.backend.database
 import sh.okx.bankoficenia.backend.model.AccountType
 import sh.okx.bankoficenia.backend.model.Transaction
 import sh.okx.bankoficenia.backend.model.TransactionType
+import java.sql.Connection
 import java.util.*
 import javax.sql.DataSource
 
@@ -146,55 +147,69 @@ data class SqlLedgerDao(val dataSource: DataSource) {
             try {
                 it.autoCommit = false
 
-                // Shit but easy
-                it.createStatement().execute("LOCK TABLE ledger")
-
-                if (!force) {
-                    val stmt = it.prepareStatement(
-                        "SELECT SUM(CASE WHEN \"type\" = 'DEBIT' THEN -amount ELSE amount END) AS amount FROM ledger WHERE \"account\" = ?"
-                    )
-                    stmt.setLong(1, accountFrom)
-                    var balance = "0"
-                    val resultSet = stmt.executeQuery()
-                    if (resultSet.next()) {
-                        balance = resultSet.getString("amount") ?: "0"
-                    }
-
-                    val balStmt = it.prepareStatement(
-                        "SELECT CAST(? AS NUMERIC(10, 4)) >= CAST(? AS NUMERIC(10, 4)) AS has_balance"
-                    )
-                    balStmt.setString(1, balance)
-                    balStmt.setString(2, amount)
-
-                    val balResultSet = balStmt.executeQuery()
-                    if (!balResultSet.next()) {
-                        return false
-                    }
-                    val hasBalance = balResultSet.getBoolean("has_balance")
-                    if (!hasBalance) {
-                        return false
-                    }
+                if (ledgeNoTransaction(it, accountFrom, accountTo, amount, description, force) != null) {
+                    it.commit()
+                    return true
+                } else {
+                    it.rollback()
+                    return false
                 }
-
-                val credit =
-                    it.prepareStatement("INSERT INTO ledger (account, referenced_account, \"type\", message, amount) VALUES (?, ?, 'CREDIT', ?, CAST(? AS NUMERIC(10, 4)))")
-                credit.setLong(1, accountTo)
-                credit.setLong(2, accountFrom)
-                credit.setString(3, description)
-                credit.setString(4, amount)
-                credit.executeUpdate()
-
-                val debit =
-                    it.prepareStatement("INSERT INTO ledger (account, referenced_account, \"type\", message, amount) VALUES (?, ?, 'DEBIT', ?, CAST(? AS NUMERIC(10, 4)))")
-                debit.setLong(1, accountFrom)
-                debit.setLong(2, accountTo)
-                debit.setString(3, description)
-                debit.setString(4, amount)
-                debit.executeUpdate()
-                return true
             } finally {
                 it.autoCommit = true
             }
         }
     }
+}
+
+fun ledgeNoTransaction(it: Connection, accountFrom: Long, accountTo: Long, amount: String, description: String, force: Boolean): Long? {
+    // Shit but easy
+    it.createStatement().execute("LOCK TABLE ledger")
+
+    if (!force) {
+        val stmt = it.prepareStatement(
+            "SELECT SUM(CASE WHEN \"type\" = 'DEBIT' THEN -amount ELSE amount END) AS amount FROM ledger WHERE \"account\" = ?"
+        )
+        stmt.setLong(1, accountFrom)
+        var balance = "0"
+        val resultSet = stmt.executeQuery()
+        if (resultSet.next()) {
+            balance = resultSet.getString("amount") ?: "0"
+        }
+
+        val balStmt = it.prepareStatement(
+            "SELECT CAST(? AS NUMERIC(10, 4)) >= CAST(? AS NUMERIC(10, 4)) AS has_balance"
+        )
+        balStmt.setString(1, balance)
+        balStmt.setString(2, amount)
+
+        val balResultSet = balStmt.executeQuery()
+        if (!balResultSet.next()) {
+            return null
+        }
+        val hasBalance = balResultSet.getBoolean("has_balance")
+        if (!hasBalance) {
+            return null
+        }
+    }
+
+    val credit =
+        it.prepareStatement("INSERT INTO ledger (account, referenced_account, \"type\", message, amount) VALUES (?, ?, 'CREDIT', ?, CAST(? AS NUMERIC(10, 4)))")
+    credit.setLong(1, accountTo)
+    credit.setLong(2, accountFrom)
+    credit.setString(3, description)
+    credit.setString(4, amount)
+    credit.executeUpdate()
+
+    val debit =
+        it.prepareStatement("INSERT INTO ledger (account, referenced_account, \"type\", message, amount) VALUES (?, ?, 'DEBIT', ?, CAST(? AS NUMERIC(10, 4))) RETURNING id")
+    debit.setLong(1, accountFrom)
+    debit.setLong(2, accountTo)
+    debit.setString(3, description)
+    debit.setString(4, amount)
+    val resultSet = debit.executeQuery()
+    if (!resultSet.next()) {
+        return null
+    }
+
+    return resultSet.getLong("id")
 }
