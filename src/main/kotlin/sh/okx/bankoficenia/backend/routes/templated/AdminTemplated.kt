@@ -13,6 +13,8 @@ import sh.okx.bankoficenia.backend.database.SqlUserDao
 import sh.okx.bankoficenia.backend.plugin.*
 import sh.okx.bankoficenia.backend.plugins.validateCsrf
 import java.math.BigDecimal
+import sh.okx.bankoficenia.backend.database.IGN_COLUMN
+import sh.okx.bankoficenia.backend.database.UpdateTargets
 
 fun Route.templatedAdminRoutes(
     userDao: SqlUserDao,
@@ -118,7 +120,7 @@ fun Route.templatedAdminRoutes(
 
                 val map = call.attributes[KEY_MAP]
                 map["user"] = adminUser
-                map["users"] = userDao.getUsers()
+                map["users"] = userDao.getAllUsers()
                 call.respond(HttpStatusCode.OK, PebbleContent("pages/admin/users.html.peb", map))
             }
             get("/accounts") {
@@ -318,7 +320,9 @@ fun Route.templatedAdminRoutes(
                     call.respond(HttpStatusCode.BadRequest)
                     return@put
                 }
-                val user = userDao.updateIgn(readUser.id, ign)
+                val user = userDao.updateUserById(readUser.id, UpdateTargets(
+                    IGN_COLUMN.withValue(ign)
+                ))
                 if (user == null) {
                     call.respond(HttpStatusCode.NotFound)
                     return@put

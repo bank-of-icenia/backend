@@ -24,7 +24,7 @@ class Configuration {
 // This plugin deduplicates some logic to make sure that there is a real account, it is opened, and the current user owns it
 val AccountPlugin = createRouteScopedPlugin("AccountPlugin", { Configuration() }) {
     on(AuthenticationChecked) { call ->
-        val user = call.principal<UserSession>()?.let { pluginConfig.pluginUserDao.read(it.userId) }
+        val user = call.principal<UserSession>()?.let { pluginConfig.pluginUserDao.getUserById(it.userId) }
         val account = call.parameters["id"]?.let { pluginConfig.pluginAccountDao.readByCode(it) }
 
         if (user == null) {

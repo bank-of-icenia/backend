@@ -18,7 +18,7 @@ class AdminConfiguration {
 
 val AdminPlugin = createRouteScopedPlugin("AdminPlugin", { AdminConfiguration() }) {
     on(AuthenticationChecked) { call ->
-        val adminUser = call.principal<UserSession>()?.let { pluginConfig.pluginUserDao.read(it.userId) }
+        val adminUser = call.principal<UserSession>()?.let { pluginConfig.pluginUserDao.getUserById(it.userId) }
         if (adminUser == null || !adminUser.admin) {
             call.respond(HttpStatusCode.NotFound)
             return@on

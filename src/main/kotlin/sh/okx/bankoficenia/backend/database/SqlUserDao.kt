@@ -1,68 +1,70 @@
 package sh.okx.bankoficenia.backend.database
 
 import sh.okx.bankoficenia.backend.model.User
+import sh.okx.bankoficenia.backend.then
 import javax.sql.DataSource
 
-data class SqlUserDao(val dataSource: DataSource) {
+val IGN_COLUMN = Column.ofString("ign")
+
+data class SqlUserDao(
+    val dataSource: DataSource
+) {
     init {
         dataSource.connection.use {
-            it.createStatement()
-                .execute(
-                    "CREATE TABLE IF NOT EXISTS users (" +
-                            "\"id\" BIGSERIAL," +
-                            "ign TEXT UNIQUE," +
-                            "discord_id BIGINT UNIQUE," +
-                            "discord_username TEXT," +
-                            "discord_globalname TEXT," +
-                            "admin BOOL NOT NULL DEFAULT FALSE," +
-                            "registered TIMESTAMP DEFAULT NOW()," +
-                            "PRIMARY KEY (\"id\"))"
-                )
+            it.createStatement().execute("""
+                CREATE TABLE IF NOT EXISTS users (
+                    id BIGSERIAL,
+                    ign TEXT UNIQUE,
+                    discord_id BIGINT UNIQUE,
+                    discord_username TEXT,
+                    discord_globalname TEXT,
+                    admin BOOL NOT NULL DEFAULT FALSE,
+                    registered TIMESTAMP DEFAULT NOW(),
+                    PRIMARY KEY ("id")
+                );
+            """.trimIndent())
         }
     }
 
-    fun getUsers(): List<User> {
+    fun getAllUsers(): List<User> {
         dataSource.connection.use {
-            val stmt = it.prepareStatement("SELECT * FROM users ORDER BY \"id\"")
-            val users = ArrayList<User>()
-
-            val resultSet = stmt.executeQuery()
-            while (resultSet.next()) {
-                users.add(
-                    User(
-                        resultSet.getLong("id"),
-                        resultSet.getString("ign"),
-                        resultSet.getLong("discord_id"),
-                        resultSet.getString("discord_username"),
-                        resultSet.getString("discord_globalname"),
-                        resultSet.getBoolean("admin"),
-                        resultSet.getTimestamp("registered").toLocalDateTime()
-                    )
-                )
+            return ArrayList<User>().apply {
+                val results = it.prepareStatement("""SELECT * FROM users ORDER BY "id";""").executeQuery()
+                while (results.next()) {
+                    add(User(
+                        results.getLong("id"),
+                        results.getString("ign"),
+                        results.getLong("discord_id"),
+                        results.getString("discord_username"),
+                        results.getString("discord_globalname"),
+                        results.getBoolean("admin"),
+                        results.getTimestamp("registered").toLocalDateTime()
+                    ))
+                }
             }
-
-            return users
         }
     }
 
-    fun read(id: Long): User? {
+    fun getUserById(
+        id: Long
+    ): User? {
         dataSource.connection.use {
-            val stmt = it.prepareStatement("SELECT * FROM users WHERE \"id\" = ?")
-            stmt.setLong(1, id)
-            val resultSet = stmt.executeQuery()
-            if (!resultSet.next()) {
-                return null
+            val result = it.prepareStatement("""SELECT * FROM users WHERE "id" = ?;""").then {
+                setLong(1, id)
+                executeQuery()
             }
-
-            return User(
-                resultSet.getLong("id"),
-                resultSet.getString("ign"),
-                resultSet.getLong("discord_id"),
-                resultSet.getString("discord_username"),
-                resultSet.getString("discord_globalname"),
-                resultSet.getBoolean("admin"),
-                resultSet.getTimestamp("registered").toLocalDateTime()
-            )
+            if (result.next()) {
+                return User(
+                    result.getLong("id"),
+                    result.getString("ign"),
+                    result.getLong("discord_id"),
+                    result.getString("discord_username"),
+                    result.getString("discord_globalname"),
+                    result.getBoolean("admin"),
+                    result.getTimestamp("registered").toLocalDateTime()
+                )
+            }
+            return null
         }
     }
 
@@ -75,67 +77,88 @@ data class SqlUserDao(val dataSource: DataSource) {
         }
     }
 
-    fun updateIgn(id: Long, ign: String): User? {
+    fun updateUserById(
+        id: Long,
+        what: UpdateTargets
+    ): User? {
         dataSource.connection.use {
-            val stmt = it.prepareStatement("UPDATE users SET ign = ? WHERE \"id\" = ? RETURNING *")
-            stmt.setString(1, ign)
-            stmt.setLong(2, id)
-            val resultSet = stmt.executeQuery()
-            if (!resultSet.next()) {
-                return null
+            val stmt = it.prepareStatement("""
+                UPDATE users
+                SET
+                    ${what.asColumns()}
+                WHERE
+                    "id" = ?
+                RETURNING *;
+            """.trimIndent())
+            var index = what.setParams(stmt)
+            stmt.setLong(++index, id)
+            val result = stmt.executeQuery()
+            if (result.next()) {
+                return User(
+                    result.getLong("id"),
+                    result.getString("ign"),
+                    result.getLong("discord_id"),
+                    result.getString("discord_username"),
+                    result.getString("discord_globalname"),
+                    result.getBoolean("admin"),
+                    result.getTimestamp("registered").toLocalDateTime()
+                )
             }
-
-            return User(
-                resultSet.getLong("id"),
-                resultSet.getString("ign"),
-                resultSet.getLong("discord_id"),
-                resultSet.getString("discord_username"),
-                resultSet.getString("discord_globalname"),
-                resultSet.getBoolean("admin"),
-                resultSet.getTimestamp("registered").toLocalDateTime()
-            )
+            return null
         }
     }
 
-    fun createUser(discordId: Long, ign: String): Long? {
+    fun createUser(
+        discordId: Long,
+        ign: String
+    ): Long? {
         dataSource.connection.use {
-            val stmt = it.prepareStatement(
-                "INSERT INTO users (discord_id, ign) " +
-                        "VALUES (?, ?) " +
-                        "ON CONFLICT DO NOTHING " +
-                        "RETURNING id"
-            )
+            val stmt = it.prepareStatement("""
+                INSERT INTO users
+                    (discord_id, ign)
+                VALUES
+                    (?, ?)
+                ON CONFLICT DO NOTHING
+                RETURNING id;
+            """.trimIndent())
             stmt.setLong(1, discordId)
             stmt.setString(2, ign)
-            val resultSet = stmt.executeQuery()
-            if (!resultSet.next()) {
-                return null
+            val results = stmt.executeQuery()
+            if (results.next()) {
+                return results.getLong("id")
             }
-
-            return resultSet.getLong("id")
+            return null
         }
     }
 
-    fun getOrCreateUser(discordId: Long, discordUsername: String, discordGlobalname: String?): Long? {
+    fun getOrCreateUser(
+        discordId: Long,
+        discordUsername: String,
+        discordGlobalname: String?
+    ): Long? {
         dataSource.connection.use {
-            val stmt = it.prepareStatement(
-                "INSERT INTO users (discord_id, discord_username, discord_globalname) " +
-                        "VALUES (?, ?, ?) " +
-                        "ON CONFLICT (discord_id) DO UPDATE SET discord_id = ?, discord_username = ?, discord_globalname = ? " +
-                        "RETURNING id"
-            )
+            val stmt = it.prepareStatement("""
+                INSERT INTO users
+                    (discord_id, discord_username, discord_globalname)
+                VALUES
+                    (?, ?, ?)
+                ON CONFLICT
+                    (discord_id)
+                DO UPDATE SET
+                    discord_username = ?,
+                    discord_globalname = ?
+                RETURNING id;
+            """.trimIndent())
             stmt.setLong(1, discordId)
             stmt.setString(2, discordUsername)
             stmt.setString(3, discordGlobalname)
-            stmt.setLong(4, discordId)
-            stmt.setString(5, discordUsername)
-            stmt.setString(6, discordGlobalname)
-            val resultSet = stmt.executeQuery()
-            if (!resultSet.next()) {
-                return null
+            stmt.setString(4, discordUsername)
+            stmt.setString(5, discordGlobalname)
+            val results = stmt.executeQuery()
+            if (results.next()) {
+                return results.getLong("id")
             }
-
-            return resultSet.getLong("id")
+            return null
         }
     }
 }

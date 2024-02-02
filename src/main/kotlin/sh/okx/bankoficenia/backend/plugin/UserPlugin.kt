@@ -20,7 +20,7 @@ class UserConfiguration {
 
 val UserPlugin = createRouteScopedPlugin("UserPlugin", { UserConfiguration() }) {
     on(AuthenticationChecked) { call ->
-        val user = call.parameters["id"]?.toLongOrNull()?.let { pluginConfig.pluginUserDao.read(it) }
+        val user = call.parameters["id"]?.toLongOrNull()?.let { pluginConfig.pluginUserDao.getUserById(it) }
         if (user == null) {
             call.respond(HttpStatusCode.NotFound)
             return@on

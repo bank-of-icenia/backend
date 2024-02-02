@@ -25,7 +25,7 @@ import javax.sql.DataSource
 
 fun main() {
     val config = HoconApplicationConfig(ConfigFactory.parseFile(File("backend.conf")))
-    val dataSource = getDataSource(config)
+    val dataSource = constructDataSource(config)
     Database.connect(dataSource)
     embeddedServer(
         Netty,

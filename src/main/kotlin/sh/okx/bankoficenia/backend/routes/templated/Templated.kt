@@ -40,7 +40,7 @@ fun Route.templatedRoutes(
 ) {
     authenticate("session-cookie", optional = true) {
         get("/") {
-            val user = call.principal<UserSession>()?.let { userDao.read(it.userId) }
+            val user = call.principal<UserSession>()?.let { userDao.getUserById(it.userId) }
 
             val map = call.attributes[KEY_MAP]
             if (user != null) {
@@ -49,7 +49,7 @@ fun Route.templatedRoutes(
             call.respond(HttpStatusCode.OK, PebbleContent("pages/index.html.peb", map))
         }
         get("/directory") {
-            val user = call.principal<UserSession>()?.let { userDao.read(it.userId) }
+            val user = call.principal<UserSession>()?.let { userDao.getUserById(it.userId) }
 
             val map = call.attributes[KEY_MAP]
             if (user != null) {
@@ -59,7 +59,7 @@ fun Route.templatedRoutes(
             call.respond(HttpStatusCode.OK, PebbleContent("pages/account/directory.html.peb", map))
         }
         get("/tos") {
-            val user = call.principal<UserSession>()?.let { userDao.read(it.userId) }
+            val user = call.principal<UserSession>()?.let { userDao.getUserById(it.userId) }
             val map = call.attributes[KEY_MAP]
             if (user != null) {
                 map["user"] = user
@@ -69,7 +69,7 @@ fun Route.templatedRoutes(
     }
     authenticate("session-cookie") {
         get("/accounts") {
-            val user = call.principal<UserSession>()?.let { userDao.read(it.userId) }
+            val user = call.principal<UserSession>()?.let { userDao.getUserById(it.userId) }
             if (user == null) {
                 call.respond(HttpStatusCode.NotFound)
                 return@get
@@ -390,7 +390,7 @@ fun Route.templatedRoutes(
                 return@post
             }
 
-            val user = userDao.read(account.userId)
+            val user = userDao.getUserById(account.userId)
 
             val method = convertMethod(toMethod)
 
@@ -430,7 +430,7 @@ fun Route.templatedRoutes(
                 return@post
             }
 
-            val user = userDao.read(account.userId)
+            val user = userDao.getUserById(account.userId)
 
             val method = convertMethod(toMethod)
 
