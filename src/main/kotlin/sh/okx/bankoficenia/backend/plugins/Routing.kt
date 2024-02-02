@@ -10,8 +10,8 @@ import sh.okx.bankoficenia.backend.database.*
 import sh.okx.bankoficenia.backend.plugin.CsrfPlugin
 import sh.okx.bankoficenia.backend.routes.discordLoginRoute
 import sh.okx.bankoficenia.backend.routes.htmxRoutes
-import sh.okx.bankoficenia.backend.routes.templated.templatedRoutes
 import sh.okx.bankoficenia.backend.routes.templated.templatedAdminRoutes
+import sh.okx.bankoficenia.backend.routes.templated.templatedRoutes
 
 fun Application.configureRouting(httpClient: HttpClient, sessionDao: SqlSessionDao, userDao: SqlUserDao, accountDao: SqlAccountDao, ledgerDao: SqlLedgerDao, unbankedDao: SqlUnbankedDao, webhook: String) {
     routing {
