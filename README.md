@@ -19,7 +19,7 @@ discord {
     client_id = "<CLIENT ID>"
     client_secret = "<CLIENT SECRET>"
     # Where users should be redirected to from Discord
-    post_auth_dest = "/callback"
+    post_auth_dest = "http://localhost:8080/callback"
     # Webhook for deposit / withdrawal logs
     webhook = "<WEBHOOK URL>"
 }
