@@ -30,67 +30,21 @@ fun Route.templatedAdminRoutes(
                 map["user"] = user
                 call.respond(HttpStatusCode.OK, PebbleContent("pages/admin/index.html.peb", map))
             }
-            get("/createaccount") {
-                val user = call.attributes[KEY_ADMIN_USER]
-                val map = call.attributes[KEY_MAP]
-                map["user"] = user
-                call.respond(HttpStatusCode.OK, PebbleContent("pages/admin/createaccount.html.peb", map))
-            }
             post("/createaccount") {
                 val user = call.attributes[KEY_ADMIN_USER]
 
                 val parameters = call.receiveParameters()
                 if (!validateCsrf(call, parameters["csrf"])) return@post
-                val userId: Long
-                val createUser = "on" == parameters["create-user"]
-                if (createUser) {
-                    val discordId = parameters["discord-id"]?.toLongOrNull()
-                    if (discordId == null || discordId < 0) {
-                        call.respond(
-                            HttpStatusCode.BadRequest,
-                            PebbleContent(
-                                "pages/admin/post_createaccount.html.peb",
-                                mapOf("message" to "parameter_missing", "parameter" to "discord-id")
-                            )
+                val userId = parameters["user-id"]?.toLongOrNull()
+                if (userId == null) {
+                    call.respond(
+                        HttpStatusCode.BadRequest,
+                        PebbleContent(
+                            "pages/admin/post_createaccount.html.peb",
+                            mapOf("message" to "parameter_missing", "parameter" to "user-id")
                         )
-                        return@post
-                    }
-                    val ign = parameters["ign"]
-                    if (ign.isNullOrBlank()) {
-                        call.respond(
-                            HttpStatusCode.BadRequest,
-                            PebbleContent(
-                                "pages/admin/post_createaccount.html.peb",
-                                mapOf("message" to "parameter_missing", "parameter" to "ign")
-                            )
-                        )
-                        return@post
-                    }
-                    val userIdOpt = userDao.createUser(discordId, ign)
-                    if (userIdOpt == null) {
-                        call.respond(
-                            HttpStatusCode.Conflict,
-                            PebbleContent(
-                                "pages/admin/post_createaccount.html.peb",
-                                mapOf("message" to "user_exists")
-                            )
-                        )
-                        return@post
-                    }
-                    userId = userIdOpt
-                } else {
-                    val userIdParam = parameters["user-id"]?.toLongOrNull()
-                    if (userIdParam == null) {
-                        call.respond(
-                            HttpStatusCode.BadRequest,
-                            PebbleContent(
-                                "pages/admin/post_createaccount.html.peb",
-                                mapOf("message" to "parameter_missing", "parameter" to "user-id")
-                            )
-                        )
-                        return@post
-                    }
-                    userId = userIdParam
+                    )
+                    return@post
                 }
 
                 val accountId = accountDao.createAccount(userId, "Holding Account")
@@ -107,12 +61,7 @@ fun Route.templatedAdminRoutes(
 
                 val map = call.attributes[KEY_MAP]
                 map["user"] = user
-                if (createUser) {
-                    map["message"] = "account_user_created"
-                    map["userId"] = userId
-                } else {
-                    map["message"] = "account_created"
-                }
+                map["message"] = "account_created"
                 call.respond(HttpStatusCode.OK, PebbleContent("pages/admin/post_createaccount.html.peb", map))
             }
             get("/users") {
