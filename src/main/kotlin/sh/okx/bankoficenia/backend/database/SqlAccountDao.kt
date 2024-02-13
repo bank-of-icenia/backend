@@ -1,13 +1,13 @@
 package sh.okx.bankoficenia.backend.database
 
-import sh.okx.bankoficenia.backend.model.Account
-import sh.okx.bankoficenia.backend.model.AccountAndUser
-import sh.okx.bankoficenia.backend.model.AccountType
-import sh.okx.bankoficenia.backend.model.DirectoryAccount
 import java.security.SecureRandom
 import java.sql.Connection
 import java.sql.ResultSet
 import javax.sql.DataSource
+import sh.okx.bankoficenia.backend.model.Account
+import sh.okx.bankoficenia.backend.model.AccountAndUser
+import sh.okx.bankoficenia.backend.model.AccountType
+import sh.okx.bankoficenia.backend.model.DirectoryAccount
 
 data class SqlAccountDao(val dataSource: DataSource) {
     private var random = SecureRandom()
@@ -57,7 +57,11 @@ data class SqlAccountDao(val dataSource: DataSource) {
         }
     }
 
-    private fun createIfNotExists(connection: Connection, select: String, create: String): Long {
+    private fun createIfNotExists(
+        connection: Connection,
+        select: String,
+        create: String
+    ): Long {
         var query: ResultSet
         while (true) {
             query = connection.createStatement().executeQuery(select)
@@ -74,7 +78,10 @@ data class SqlAccountDao(val dataSource: DataSource) {
         return query.getLong("id")
     }
 
-    fun createAccount(userId: Long, name: String): Long? {
+    fun createAccount(
+        userId: Long,
+        name: String
+    ): Long? {
         dataSource.connection.use {
             for (i in 1..100) {
                 val stmt =
@@ -97,7 +104,9 @@ data class SqlAccountDao(val dataSource: DataSource) {
         }
     }
 
-    fun getAccounts(userId: Long): List<Account> {
+    fun getAccounts(
+        userId: Long
+    ): List<Account> {
         dataSource.connection.use {
             val stmt = it.prepareStatement("SELECT * FROM accounts WHERE user_id = ? AND NOT closed")
             stmt.setLong(1, userId)
@@ -122,7 +131,10 @@ data class SqlAccountDao(val dataSource: DataSource) {
         }
     }
 
-    fun setInDirectory(accountId: Long, inDirectory: Boolean): Boolean {
+    fun setInDirectory(
+        accountId: Long,
+        inDirectory: Boolean
+    ): Boolean {
         dataSource.connection.use {
             val stmt = it.prepareStatement("UPDATE accounts SET in_directory = ? WHERE \"id\" = ? AND NOT closed")
             stmt.setBoolean(1, inDirectory)
@@ -132,7 +144,9 @@ data class SqlAccountDao(val dataSource: DataSource) {
         }
     }
 
-    fun read(accountId: Long): Account? {
+    fun read(
+        accountId: Long
+    ): Account? {
         dataSource.connection.use {
             val stmt = it.prepareStatement("SELECT * FROM accounts WHERE id = ? AND NOT closed")
             stmt.setLong(1, accountId)
@@ -156,7 +170,9 @@ data class SqlAccountDao(val dataSource: DataSource) {
         }
     }
 
-    fun readByCode(accountCode: String): Account? {
+    fun readByCode(
+        accountCode: String
+    ): Account? {
         dataSource.connection.use {
             val stmt = it.prepareStatement("SELECT * FROM accounts WHERE code = ? AND NOT closed")
             stmt.setString(1, accountCode)

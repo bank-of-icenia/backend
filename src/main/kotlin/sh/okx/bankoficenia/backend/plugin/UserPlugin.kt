@@ -1,18 +1,14 @@
 package sh.okx.bankoficenia.backend.plugin
 
-import io.ktor.http.*
-import io.ktor.server.application.*
-import io.ktor.server.auth.*
-import io.ktor.server.response.*
-import io.ktor.util.*
-import sh.okx.bankoficenia.backend.database.SqlAccountDao
+import io.ktor.http.HttpStatusCode
+import io.ktor.server.application.createRouteScopedPlugin
+import io.ktor.server.auth.AuthenticationChecked
+import io.ktor.server.response.respond
+import io.ktor.util.AttributeKey
 import sh.okx.bankoficenia.backend.database.SqlUserDao
-import sh.okx.bankoficenia.backend.model.Account
 import sh.okx.bankoficenia.backend.model.User
-import sh.okx.bankoficenia.backend.model.UserSession
 
 val KEY_READ_USER = AttributeKey<User>("read_user")
-
 
 class UserConfiguration {
     lateinit var pluginUserDao: SqlUserDao

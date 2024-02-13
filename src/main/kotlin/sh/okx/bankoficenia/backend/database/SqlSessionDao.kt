@@ -1,5 +1,7 @@
 package sh.okx.bankoficenia.backend.database
 
+import java.security.SecureRandom
+import javax.sql.DataSource
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.Table
 import org.jetbrains.exposed.sql.and
@@ -9,12 +11,12 @@ import org.jetbrains.exposed.sql.javatime.datetime
 import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.transactions.transaction
 import sh.okx.bankoficenia.backend.model.UserSession
-import java.security.SecureRandom
-import javax.sql.DataSource
 
 val csprng = SecureRandom()
 
-data class SqlSessionDao(val dataSource: DataSource) {
+data class SqlSessionDao(
+    val dataSource: DataSource
+) {
     init {
         dataSource.connection.use {
             it.createStatement()
@@ -22,7 +24,9 @@ data class SqlSessionDao(val dataSource: DataSource) {
         }
     }
 
-    fun read(id: String): UserSession? {
+    fun read(
+        id: String
+    ): UserSession? {
         return transaction {
             val session =
                 Sessions.select { (Sessions.sessionId eq id) and (Sessions.expiration greater CustomDateTimeFunction("NOW")) }
@@ -36,7 +40,10 @@ data class SqlSessionDao(val dataSource: DataSource) {
     }
 
     @OptIn(ExperimentalStdlibApi::class)
-    fun write(id: String, user: Long) {
+    fun write(
+        id: String,
+        user: Long
+    ) {
         dataSource.connection.use {
             val stmt = it.prepareStatement("INSERT INTO sessions VALUES (?, ?, NOW() + INTERVAL '7 DAYS', ?) ON CONFLICT (\"id\") DO UPDATE SET expiration = NOW() + INTERVAL '7 DAYS', csrf = ?, user_id = ?")
             stmt.setString(1, id)

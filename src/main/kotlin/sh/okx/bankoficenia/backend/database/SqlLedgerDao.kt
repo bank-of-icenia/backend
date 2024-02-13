@@ -1,13 +1,15 @@
 package sh.okx.bankoficenia.backend.database
 
+import java.sql.Connection
+import java.util.Collections
+import javax.sql.DataSource
 import sh.okx.bankoficenia.backend.model.AccountType
 import sh.okx.bankoficenia.backend.model.Transaction
 import sh.okx.bankoficenia.backend.model.TransactionType
-import java.sql.Connection
-import java.util.*
-import javax.sql.DataSource
 
-data class SqlLedgerDao(val dataSource: DataSource) {
+data class SqlLedgerDao(
+    val dataSource: DataSource
+) {
     init {
         dataSource.connection.use {
             // sorry, postgres doesn't have CREATE TYPE IF NOT EXISTS!
@@ -71,7 +73,9 @@ data class SqlLedgerDao(val dataSource: DataSource) {
     /**
      * Returned amounts are double and therefore imprecise and not suitable for numerical computation, only display.
      */
-    fun getBalances(accounts: List<Long>): List<Double> {
+    fun getBalances(
+        accounts: List<Long>
+    ): List<Double> {
         if (accounts.isEmpty()) {
             return Collections.emptyList()
         }
@@ -105,7 +109,9 @@ data class SqlLedgerDao(val dataSource: DataSource) {
         }
     }
 
-    fun getTransactions(account: Long): List<Transaction> {
+    fun getTransactions(
+        account: Long
+    ): List<Transaction> {
         dataSource.connection.use {
             val stmt = it.prepareStatement(
                 "SELECT ledger.id, account, type, message, amount, timestamp, a2.account_type as account_type, COALESCE(accounts.reference_name, CASE WHEN users.ign IS NOT NULL THEN accounts.code || ' (' || users.ign || ')' ELSE accounts.code END) AS referenced_account_code, " +
@@ -142,7 +148,13 @@ data class SqlLedgerDao(val dataSource: DataSource) {
         }
     }
 
-    fun ledge(accountFrom: Long, accountTo: Long, amount: String, description: String, force: Boolean = false): Boolean {
+    fun ledge(
+        accountFrom: Long,
+        accountTo: Long,
+        amount: String,
+        description: String,
+        force: Boolean = false
+    ): Boolean {
         dataSource.connection.use {
             try {
                 it.autoCommit = false
@@ -161,7 +173,14 @@ data class SqlLedgerDao(val dataSource: DataSource) {
     }
 }
 
-fun ledgeNoTransaction(it: Connection, accountFrom: Long, accountTo: Long, amount: String, description: String, force: Boolean): Long? {
+fun ledgeNoTransaction(
+    it: Connection,
+    accountFrom: Long,
+    accountTo: Long,
+    amount: String,
+    description: String,
+    force: Boolean
+): Long? {
     // Shit but easy
     it.createStatement().execute("LOCK TABLE ledger")
 

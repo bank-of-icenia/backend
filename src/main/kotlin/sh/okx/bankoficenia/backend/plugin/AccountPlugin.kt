@@ -1,10 +1,11 @@
 package sh.okx.bankoficenia.backend.plugin
 
-import io.ktor.http.*
-import io.ktor.server.application.*
-import io.ktor.server.auth.*
-import io.ktor.server.response.*
-import io.ktor.util.*
+import io.ktor.http.HttpStatusCode
+import io.ktor.server.application.createRouteScopedPlugin
+import io.ktor.server.auth.AuthenticationChecked
+import io.ktor.server.auth.principal
+import io.ktor.server.response.respond
+import io.ktor.util.AttributeKey
 import sh.okx.bankoficenia.backend.database.SqlAccountDao
 import sh.okx.bankoficenia.backend.database.SqlUserDao
 import sh.okx.bankoficenia.backend.model.Account
@@ -13,7 +14,6 @@ import sh.okx.bankoficenia.backend.model.UserSession
 
 val KEY_USER = AttributeKey<User>("user")
 val KEY_ACCOUNT = AttributeKey<Account>("account")
-
 
 class Configuration {
     lateinit var pluginUserDao: SqlUserDao
@@ -25,15 +25,16 @@ class Configuration {
 val AccountPlugin = createRouteScopedPlugin("AccountPlugin", { Configuration() }) {
     on(AuthenticationChecked) { call ->
         val user = call.principal<UserSession>()?.let { pluginConfig.pluginUserDao.getUserById(it.userId) }
-        val account = call.parameters["id"]?.let { pluginConfig.pluginAccountDao.readByCode(it) }
-
         if (user == null) {
             call.respond(HttpStatusCode.NotFound)
             return@on
         }
+
+        val account = call.parameters["id"]?.let { pluginConfig.pluginAccountDao.readByCode(it) }
         if (account != null && !account.closed && account.userId == user.id) {
             call.attributes.put(KEY_ACCOUNT, account)
-        } else if (!pluginConfig.optionalAccount) {
+        }
+        else if (!pluginConfig.optionalAccount) {
             call.respond(HttpStatusCode.NotFound)
             return@on
         }

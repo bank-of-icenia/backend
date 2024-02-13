@@ -1,20 +1,36 @@
 package sh.okx.bankoficenia.backend.routes.templated
 
-import io.ktor.http.*
-import io.ktor.server.application.*
-import io.ktor.server.auth.*
-import io.ktor.server.pebble.*
-import io.ktor.server.request.*
-import io.ktor.server.response.*
-import io.ktor.server.routing.*
+import io.ktor.http.HttpStatusCode
+import io.ktor.server.application.call
+import io.ktor.server.application.install
+import io.ktor.server.auth.authenticate
+import io.ktor.server.pebble.PebbleContent
+import io.ktor.server.request.receiveParameters
+import io.ktor.server.response.respond
+import io.ktor.server.routing.Route
+import io.ktor.server.routing.get
+import io.ktor.server.routing.post
+import io.ktor.server.routing.put
+import io.ktor.server.routing.route
+import java.math.BigDecimal
+import kotlin.collections.listOf
+import kotlin.collections.map
+import kotlin.collections.mapOf
+import kotlin.collections.set
+import sh.okx.bankoficenia.backend.database.IGN_COLUMN
 import sh.okx.bankoficenia.backend.database.SqlAccountDao
 import sh.okx.bankoficenia.backend.database.SqlLedgerDao
 import sh.okx.bankoficenia.backend.database.SqlUserDao
-import sh.okx.bankoficenia.backend.plugin.*
-import sh.okx.bankoficenia.backend.plugins.validateCsrf
-import java.math.BigDecimal
-import sh.okx.bankoficenia.backend.database.IGN_COLUMN
 import sh.okx.bankoficenia.backend.database.UpdateTargets
+import sh.okx.bankoficenia.backend.plugin.AdminAccountPlugin
+import sh.okx.bankoficenia.backend.plugin.AdminPlugin
+import sh.okx.bankoficenia.backend.plugin.CSRF_KEY
+import sh.okx.bankoficenia.backend.plugin.KEY_ADMIN_ACCOUNT
+import sh.okx.bankoficenia.backend.plugin.KEY_ADMIN_USER
+import sh.okx.bankoficenia.backend.plugin.KEY_MAP
+import sh.okx.bankoficenia.backend.plugin.KEY_READ_USER
+import sh.okx.bankoficenia.backend.plugin.UserPlugin
+import sh.okx.bankoficenia.backend.plugins.validateCsrf
 
 fun Route.templatedAdminRoutes(
     userDao: SqlUserDao,
@@ -34,7 +50,7 @@ fun Route.templatedAdminRoutes(
                 val user = call.attributes[KEY_ADMIN_USER]
 
                 val parameters = call.receiveParameters()
-                if (!validateCsrf(call, parameters["csrf"])) return@post
+                if (!validateCsrf(call, parameters[CSRF_KEY])) return@post
                 val userId = parameters["user-id"]?.toLongOrNull()
                 if (userId == null) {
                     call.respond(
@@ -103,7 +119,7 @@ fun Route.templatedAdminRoutes(
             }
             post("/withdraw/submit") {
                 val parameters = call.receiveParameters()
-                if (!validateCsrf(call, parameters["csrf"])) return@post
+                if (!validateCsrf(call, parameters[CSRF_KEY])) return@post
                 val accountCode = parameters["account"]
                 val reason = parameters["reason"]
                 val amountStr = parameters["amount"]
@@ -148,7 +164,7 @@ fun Route.templatedAdminRoutes(
             }
             post("/deposit/submit") {
                 val parameters = call.receiveParameters()
-                if (!validateCsrf(call, parameters["csrf"])) return@post
+                if (!validateCsrf(call, parameters[CSRF_KEY])) return@post
                 val accountCode = parameters["account"]
                 val reason = parameters["reason"]
                 val amountStr = parameters["amount"]
@@ -199,7 +215,7 @@ fun Route.templatedAdminRoutes(
             }
             post("/transfer/submit") {
                 val parameters = call.receiveParameters()
-                if (!validateCsrf(call, parameters["csrf"])) return@post
+                if (!validateCsrf(call, parameters[CSRF_KEY])) return@post
                 val fromId = parameters["from"]?.toLongOrNull()
                 val toId = parameters["to"]?.toLongOrNull()
                 val amountStr = parameters["amount"]
@@ -263,7 +279,7 @@ fun Route.templatedAdminRoutes(
                 val readUser = call.attributes[KEY_READ_USER]
 
                 val parameters = call.receiveParameters()
-                if (!validateCsrf(call, parameters["csrf"])) return@put
+                if (!validateCsrf(call, parameters[CSRF_KEY])) return@put
                 val ign = parameters["ign"]
                 if (ign.isNullOrBlank()) {
                     call.respond(HttpStatusCode.BadRequest)

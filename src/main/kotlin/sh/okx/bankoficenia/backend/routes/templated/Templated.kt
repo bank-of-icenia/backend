@@ -1,13 +1,24 @@
 package sh.okx.bankoficenia.backend.routes.templated
 
-import io.ktor.client.*
-import io.ktor.http.*
-import io.ktor.server.application.*
-import io.ktor.server.auth.*
-import io.ktor.server.pebble.*
-import io.ktor.server.request.*
-import io.ktor.server.response.*
-import io.ktor.server.routing.*
+import io.ktor.client.HttpClient
+import io.ktor.http.HttpStatusCode
+import io.ktor.server.application.call
+import io.ktor.server.application.install
+import io.ktor.server.auth.authenticate
+import io.ktor.server.auth.principal
+import io.ktor.server.pebble.PebbleContent
+import io.ktor.server.request.receiveParameters
+import io.ktor.server.response.respond
+import io.ktor.server.routing.Route
+import io.ktor.server.routing.get
+import io.ktor.server.routing.post
+import java.math.BigDecimal
+import java.text.DecimalFormat
+import java.util.regex.Pattern
+import kotlin.collections.listOf
+import kotlin.collections.map
+import kotlin.collections.mapIndexed
+import kotlin.collections.set
 import sh.okx.bankoficenia.backend.database.SqlAccountDao
 import sh.okx.bankoficenia.backend.database.SqlLedgerDao
 import sh.okx.bankoficenia.backend.database.SqlUnbankedDao
@@ -16,13 +27,11 @@ import sh.okx.bankoficenia.backend.discord.notifyDeposit
 import sh.okx.bankoficenia.backend.discord.notifyWithdrawal
 import sh.okx.bankoficenia.backend.model.UserSession
 import sh.okx.bankoficenia.backend.plugin.AccountPlugin
+import sh.okx.bankoficenia.backend.plugin.CSRF_KEY
 import sh.okx.bankoficenia.backend.plugin.KEY_ACCOUNT
 import sh.okx.bankoficenia.backend.plugin.KEY_MAP
 import sh.okx.bankoficenia.backend.plugin.KEY_USER
 import sh.okx.bankoficenia.backend.plugins.validateCsrf
-import java.math.BigDecimal
-import java.text.DecimalFormat
-import java.util.regex.Pattern
 
 val amountFormat = DecimalFormat("0.0000")
 val amountRegex: Pattern = Pattern.compile("\\d{0,10}(\\.\\d{1,4})?")
@@ -104,7 +113,7 @@ fun Route.templatedRoutes(
             val account = call.attributes[KEY_ACCOUNT]
 
             val parameters = call.receiveParameters()
-            if (!validateCsrf(call, parameters["csrf"])) return@post
+            if (!validateCsrf(call, parameters[CSRF_KEY])) return@post
 
             if (parameters["directorycheckbox"] == "on") {
                 accountDao.setInDirectory(account.id, true)
@@ -155,7 +164,7 @@ fun Route.templatedRoutes(
         }
         post("/transfer/confirm") {
             val parameters = call.receiveParameters()
-            if (!validateCsrf(call, parameters["csrf"])) return@post
+            if (!validateCsrf(call, parameters[CSRF_KEY])) return@post
 
             val fromId = parameters["from"]
             val toCode = parameters["to"]
@@ -220,7 +229,7 @@ fun Route.templatedRoutes(
         post("/transfer/submit") {
             // The user should not have changed any of these parameters so we don't need to bother with a good page
             val parameters = call.receiveParameters()
-            if (!validateCsrf(call, parameters["csrf"])) return@post
+            if (!validateCsrf(call, parameters[CSRF_KEY])) return@post
             val fromId = parameters["from"]
             val toCode = parameters["to"]
             val amountStr = parameters["amount"]
@@ -265,7 +274,7 @@ fun Route.templatedRoutes(
         }
         post("/unbanked-transfer/confirm") {
             val parameters = call.receiveParameters()
-            if (!validateCsrf(call, parameters["csrf"])) return@post
+            if (!validateCsrf(call, parameters[CSRF_KEY])) return@post
 
             val fromId = parameters["from"]
             val toIgn = parameters["to"]
@@ -323,7 +332,7 @@ fun Route.templatedRoutes(
         post("/unbanked-transfer/submit") {
             // The user should not have changed any of these parameters so we don't need to bother with a good page
             val parameters = call.receiveParameters()
-            if (!validateCsrf(call, parameters["csrf"])) return@post
+            if (!validateCsrf(call, parameters[CSRF_KEY])) return@post
             val fromId = parameters["from"]
             val toIgn = parameters["to"]
             val amountStr = parameters["amount"]
@@ -367,7 +376,7 @@ fun Route.templatedRoutes(
         }
         post("/deposit/submit") {
             val parameters = call.receiveParameters()
-            if (!validateCsrf(call, parameters["csrf"])) return@post
+            if (!validateCsrf(call, parameters[CSRF_KEY])) return@post
             val fromCode = parameters["from"]
             val toMethod = parameters["to"]
             val info = parameters["info"]
@@ -405,7 +414,7 @@ fun Route.templatedRoutes(
         }
         post("/withdraw/submit") {
             val parameters = call.receiveParameters()
-            if (!validateCsrf(call, parameters["csrf"])) return@post
+            if (!validateCsrf(call, parameters[CSRF_KEY])) return@post
             val fromCode = parameters["from"]
             val toMethod = parameters["to"]
             val info = parameters["info"]
@@ -456,7 +465,9 @@ fun Route.templatedRoutes(
     }
 }
 
-private fun convertMethod(method: String): String {
+private fun convertMethod(
+    method: String
+): String {
     return when (method) {
         "branch" -> "Meet in a bank branch"
         "inperson" -> "Meet elsewhere"

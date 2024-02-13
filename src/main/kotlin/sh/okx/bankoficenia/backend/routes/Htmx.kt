@@ -1,18 +1,22 @@
 package sh.okx.bankoficenia.backend.routes
 
-import io.ktor.http.*
-import io.ktor.server.application.*
-import io.ktor.server.auth.*
-import io.ktor.server.pebble.*
-import io.ktor.server.request.*
-import io.ktor.server.response.*
-import io.ktor.server.routing.*
+import io.ktor.http.HttpStatusCode
+import io.ktor.server.application.call
+import io.ktor.server.application.install
+import io.ktor.server.auth.authenticate
+import io.ktor.server.pebble.PebbleContent
+import io.ktor.server.request.receiveParameters
+import io.ktor.server.response.respond
+import io.ktor.server.routing.Route
+import io.ktor.server.routing.post
+import kotlin.collections.HashMap
+import kotlin.collections.mapOf
+import kotlin.collections.set
 import sh.okx.bankoficenia.backend.database.SqlAccountDao
 import sh.okx.bankoficenia.backend.database.SqlLedgerDao
 import sh.okx.bankoficenia.backend.database.SqlUserDao
 import sh.okx.bankoficenia.backend.plugin.AdminPlugin
 import sh.okx.bankoficenia.backend.plugin.KEY_ADMIN_USER
-import java.util.HashMap
 
 fun Route.htmxRoutes(
     userDao: SqlUserDao,

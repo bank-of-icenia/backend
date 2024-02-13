@@ -1,8 +1,8 @@
 package sh.okx.bankoficenia.backend.database
 
+import javax.sql.DataSource
 import sh.okx.bankoficenia.backend.model.User
 import sh.okx.bankoficenia.backend.then
-import javax.sql.DataSource
 
 val IGN_COLUMN = Column.ofString("ign")
 
@@ -68,7 +68,9 @@ data class SqlUserDao(
         }
     }
 
-    fun hasIgn(ign: String): Boolean {
+    fun hasIgn(
+        ign: String
+    ): Boolean {
         dataSource.connection.use {
             val stmt = it.prepareStatement("SELECT 1 FROM users WHERE ign = ?")
             stmt.setString(1, ign)

@@ -1,8 +1,8 @@
 package sh.okx.bankoficenia.backend.plugins
 
-import io.ktor.http.*
-import io.ktor.server.application.*
-import io.ktor.server.response.*
+import io.ktor.http.HttpStatusCode
+import io.ktor.server.application.ApplicationCall
+import io.ktor.server.response.respond
 import sh.okx.bankoficenia.backend.plugin.KEY_CSRF
 
 suspend fun validateCsrf(

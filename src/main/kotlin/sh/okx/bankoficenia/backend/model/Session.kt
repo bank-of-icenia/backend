@@ -1,16 +1,13 @@
 package sh.okx.bankoficenia.backend.model
 
-import io.ktor.server.application.*
-import io.ktor.server.auth.*
+import io.ktor.server.application.ApplicationCall
+import io.ktor.server.auth.Principal
+import io.ktor.server.auth.principal
 
 suspend fun getSessionApi(
     call: ApplicationCall
 ): UserSession? {
-    val userSession: UserSession? = call.principal<UserSession>()
-    if (userSession == null) {
-        return null
-    }
-    return userSession
+    return call.principal<UserSession>()
 }
 
 data class UserSession(val userId: Long, val csrf: String) : Principal

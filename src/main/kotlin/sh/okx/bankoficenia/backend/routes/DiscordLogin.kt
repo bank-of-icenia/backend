@@ -1,23 +1,34 @@
 package sh.okx.bankoficenia.backend.routes
 
-import io.ktor.client.*
-import io.ktor.client.call.*
-import io.ktor.client.request.*
-import io.ktor.http.*
-import io.ktor.server.application.*
-import io.ktor.server.auth.*
-import io.ktor.server.pebble.*
-import io.ktor.server.response.*
-import io.ktor.server.routing.*
-import io.ktor.server.sessions.*
+import io.ktor.client.HttpClient
+import io.ktor.client.call.body
+import io.ktor.client.request.get
+import io.ktor.client.request.headers
+import io.ktor.http.HttpHeaders
+import io.ktor.http.HttpStatusCode
+import io.ktor.server.application.call
+import io.ktor.server.auth.OAuthAccessTokenResponse
+import io.ktor.server.auth.authenticate
+import io.ktor.server.auth.principal
+import io.ktor.server.pebble.PebbleContent
+import io.ktor.server.response.respond
+import io.ktor.server.response.respondRedirect
+import io.ktor.server.routing.Route
+import io.ktor.server.routing.get
+import io.ktor.server.sessions.sessions
+import io.ktor.server.sessions.set
+import java.security.SecureRandom
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import sh.okx.bankoficenia.backend.database.SqlSessionDao
 import sh.okx.bankoficenia.backend.database.SqlUserDao
-import java.security.SecureRandom
 
 @OptIn(ExperimentalStdlibApi::class)
-fun Route.discordLoginRoute(httpClient: HttpClient, sessionDao: SqlSessionDao, userDao: SqlUserDao) {
+fun Route.discordLoginRoute(
+    httpClient: HttpClient,
+    sessionDao: SqlSessionDao,
+    userDao: SqlUserDao
+) {
     val csprng = SecureRandom()
     authenticate("auth-oauth-discord") {
         get("/login") {}

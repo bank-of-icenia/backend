@@ -2,7 +2,9 @@ package sh.okx.bankoficenia.backend.database
 
 import javax.sql.DataSource
 
-data class SqlUnbankedDao(val dataSource: DataSource) {
+data class SqlUnbankedDao(
+    val dataSource: DataSource
+) {
     init {
         dataSource.connection.use {
             it.createStatement()
@@ -17,7 +19,13 @@ data class SqlUnbankedDao(val dataSource: DataSource) {
         }
     }
 
-    fun ledgeUnbanked(accountFrom: Long, accountTo: Long, amount: String, description: String, ign: String): Boolean {
+    fun ledgeUnbanked(
+        accountFrom: Long,
+        accountTo: Long,
+        amount: String,
+        description: String,
+        ign: String
+    ): Boolean {
         dataSource.connection.use {
             try {
                 it.autoCommit = false
