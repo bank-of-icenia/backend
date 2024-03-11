@@ -1,0 +1,51 @@
+{% extends "admin.html.peb" %}
+{% set selected = "interest" %}
+{% block head %}
+<style>
+    .box {
+        border: 1px solid #000;
+    }
+</style>
+{% endblock %}
+{% block body %}
+<main class="p-4">
+    <h3>Early Interest Payments</h3>
+
+    <div class="box">
+        <h4>Skipped</h4>
+        <ul>
+            {% for skip in skipped %}
+            <li>
+                {{ skip.accountId }}:{{ skip.ownerName }}
+            </li>
+            {% endfor %}
+        </ul>
+    </div>
+
+    <br/>
+
+    <div class="box">
+        <h4>Failed</h4>
+        <ul>
+            {% for fail in failed %}
+            <li>
+                {{ fail.accountId }}:{{ fail.ownerName }}
+            </li>
+            {% endfor %}
+        </ul>
+    </div>
+
+    <br/>
+
+    <div class="box">
+        <h4>Succeeded</h4>
+        <ul>
+            {% for succeeded in success %}
+            <li>
+                {{ succeeded.accountId }}:{{ succeeded.ownerName }} - {{ succeeded.amount }}
+            </li>
+            {% endfor %}
+        </ul>
+    </div>
+</main>
+{% endblock %}

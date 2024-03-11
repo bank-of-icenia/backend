@@ -22,6 +22,8 @@ import sh.okx.bankoficenia.backend.database.SqlAccountDao
 import sh.okx.bankoficenia.backend.database.SqlLedgerDao
 import sh.okx.bankoficenia.backend.database.SqlUserDao
 import sh.okx.bankoficenia.backend.database.UpdateTargets
+import sh.okx.bankoficenia.backend.database.banking
+import sh.okx.bankoficenia.backend.database.calculateAccruedInterestFor
 import sh.okx.bankoficenia.backend.plugin.AdminAccountPlugin
 import sh.okx.bankoficenia.backend.plugin.AdminPlugin
 import sh.okx.bankoficenia.backend.plugin.CSRF_KEY
@@ -104,6 +106,83 @@ fun Route.templatedAdminRoutes(
                 map["transaction"] = ledgerDao.reconcileTransactionType()
                 map["account"] = ledgerDao.reconcileAccountType()
                 call.respond(HttpStatusCode.OK, PebbleContent("pages/admin/reconcile.html.peb", map))
+            }
+            get("/interest") {
+                val adminUser = call.attributes[KEY_ADMIN_USER]
+
+                val map = call.attributes[KEY_MAP]
+                map["user"] = adminUser
+                call.respond(HttpStatusCode.OK, PebbleContent("pages/admin/interest.html.peb", map))
+            }
+            post("/interest/early/submit") {
+                val parameters = call.receiveParameters()
+                if (!validateCsrf(call, parameters[CSRF_KEY])) return@post
+
+                val map = call.attributes[KEY_MAP]
+                map["user"] = call.attributes[KEY_ADMIN_USER]
+
+                data class InterestEarlyAccount(
+                    val accountId: Long,
+                    val ownerName: String,
+                    val amount: String
+                )
+
+                val skipped: MutableSet<InterestEarlyAccount> = mutableSetOf()
+                val failed: MutableSet<InterestEarlyAccount> = mutableSetOf()
+                val success: MutableSet<InterestEarlyAccount> = mutableSetOf()
+
+                for (account in accountDao.getAllAccountsAndUser()) {
+                    if (account.code === null) {
+                        continue
+                    }
+                    val interestAmount: BigDecimal
+                    banking {
+                        interestAmount = calculateAccruedInterestFor(account.id)
+                    }
+                    val sender: Long
+                    val recipient: Long
+                    if (interestAmount > BigDecimal.ZERO) {
+                        sender = accountDao.interestAccount
+                        recipient = account.id
+                    }
+                    else if (interestAmount < BigDecimal.ZERO) {
+                        sender = account.id
+                        recipient = accountDao.assetAccount
+                    }
+                    else {
+                        skipped.add(InterestEarlyAccount(
+                            account.id,
+                            account.userIgn ?: account.userDiscord?.let { "d:$it" } ?: ("boi:" + account.id),
+                            String.format("%.4f", BigDecimal.ZERO)
+                        ))
+                        continue
+                    }
+                    if (!ledgerDao.ledge(
+                        sender,
+                        recipient,
+                        String.format("%.4f", interestAmount),
+                        "Instant interest payout",
+                        force = true
+                    )) {
+                        failed.add(InterestEarlyAccount(
+                            account.id,
+                            account.userIgn ?: account.userDiscord?.let { "d:$it" } ?: ("boi:" + account.id),
+                            String.format("%.4f", BigDecimal.ZERO)
+                        ))
+                        continue
+                    }
+                    success.add(InterestEarlyAccount(
+                        account.id,
+                        account.userIgn ?: account.userDiscord?.let { "d:$it" } ?: ("boi:" + account.id),
+                        String.format("%.4f", interestAmount)
+                    ))
+                }
+
+                map["skipped"] = skipped
+                map["failed"] = failed
+                map["success"] = success
+
+                call.respond(HttpStatusCode.OK, PebbleContent("pages/admin/interest_early_submit.html.peb", map))
             }
             get("/withdraw") {
                 val adminUser = call.attributes[KEY_ADMIN_USER]

@@ -4,6 +4,12 @@ import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
 import io.ktor.server.config.ApplicationConfig
 import java.sql.PreparedStatement
+import kotlin.contracts.ExperimentalContracts
+import kotlin.contracts.InvocationKind
+import kotlin.contracts.contract
+import org.jetbrains.exposed.sql.SchemaUtils
+import org.jetbrains.exposed.sql.Transaction
+import org.jetbrains.exposed.sql.transactions.transaction
 
 fun constructDataSource(
     config: ApplicationConfig
@@ -13,6 +19,41 @@ fun constructDataSource(
         username = config.property("database.username").getString()
         password = config.property("database.password").getString()
     })
+}
+
+fun initDatabase() {
+    transaction {
+        // Interest
+        SchemaUtils.create(InterestPaymentsTable)
+        SchemaUtils.create(AccumulatedInterestTable)
+    }
+}
+
+interface BankDao {
+    val internal: Transaction
+
+    fun abort()
+}
+
+@OptIn(ExperimentalContracts::class)
+fun banking(
+    block: BankDao.() -> Unit
+) {
+    contract {
+        callsInPlace(block, InvocationKind.EXACTLY_ONCE)
+    }
+    transaction {
+        val transaction = this
+
+        block(object : BankDao {
+            override val internal: Transaction
+                get() = transaction
+
+            override fun abort() {
+                rollback()
+            }
+        })
+    }
 }
 
 /**

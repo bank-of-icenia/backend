@@ -22,6 +22,9 @@
                         <a class="nav-link {% if selected == "reconcile" %}active{% endif %}" href="/admin/reconcile">Reconcile</a>
                     </li>
                     <li class="nav-item">
+                        <a class="nav-link {% if selected == "interest" %}active{% endif %}" href="/admin/interest">Interest</a>
+                    </li>
+                    <li class="nav-item">
                         <a class="nav-link {% if selected == "withdraw" %}active{% endif %}" href="/admin/withdraw">Withdraw</a>
                     </li>
                     <li class="nav-item">

@@ -36,6 +36,7 @@ import sh.okx.bankoficenia.backend.database.SqlSessionDao
 import sh.okx.bankoficenia.backend.database.SqlUnbankedDao
 import sh.okx.bankoficenia.backend.database.SqlUserDao
 import sh.okx.bankoficenia.backend.database.constructDataSource
+import sh.okx.bankoficenia.backend.database.initDatabase
 import sh.okx.bankoficenia.backend.plugins.Extensions
 import sh.okx.bankoficenia.backend.plugins.configureRouting
 
@@ -43,6 +44,7 @@ fun main() {
     val config = HoconApplicationConfig(ConfigFactory.parseFile(File("backend.conf")))
     val dataSource = constructDataSource(config)
     Database.connect(dataSource)
+    initDatabase()
     embeddedServer(
         Netty,
         port = config.property("port").getString().toInt(),
